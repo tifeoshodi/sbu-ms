@@ -1,0 +1,8 @@
+streamlit
+pandas
+plotly
+numpy
+openpyxl
+python-dateutil
+streamlit-aggrid
+streamlit-option-menu
