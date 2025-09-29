@@ -1,0 +1,32 @@
+# SBU/PO Dashboard - Streamlit Requirements
+# Strategic Business Unit and Purchase Order Management System
+
+# Core Streamlit Framework
+streamlit>=1.28.0
+
+# Data manipulation and analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Data visualization
+plotly>=5.17.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Database
+# sqlite3 - Built into Python, no installation needed
+
+# Excel file handling
+openpyxl>=3.1.0
+
+# Additional utilities
+python-dateutil>=2.8.0
+
+# Streamlit components
+streamlit-aggrid>=0.3.4
+streamlit-option-menu>=0.3.6
+
+# Development (optional)
+pytest>=7.0.0
+
+# Note: All packages are compatible with Python 3.8+
