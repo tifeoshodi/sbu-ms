@@ -396,3 +396,107 @@ class DatabaseManager:
             """, (days_ahead,))
             
             return [dict(row) for row in cursor.fetchall()]
+    
+    def update_client(self, client_id: int, name: str, industry_sector: str = "",
+                     contact_person: str = "", email: str = "", phone: str = "",
+                     address: str = "", country: str = "") -> bool:
+        """Update an existing client company"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE client_companies 
+                SET name = ?, industry_sector = ?, contact_person = ?, 
+                    email = ?, phone = ?, address = ?, country = ?
+                WHERE id = ?
+            """, (name, industry_sector, contact_person, email, phone, address, country, client_id))
+            conn.commit()
+            return cursor.rowcount > 0
+    
+    def delete_client(self, client_id: int) -> bool:
+        """Delete a client company (only if no associated POs)"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Check for associated POs
+            cursor.execute("SELECT COUNT(*) FROM purchase_orders WHERE client_id = ?", (client_id,))
+            count = cursor.fetchone()[0]
+            
+            if count > 0:
+                raise ValueError(f"Cannot delete client: {count} purchase orders are associated with this client")
+            
+            cursor.execute("DELETE FROM client_companies WHERE id = ?", (client_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+    
+    def update_purchase_order(self, po_id: int, po_number: str, sbu_id: int, client_id: int,
+                             po_value: float, currency: str, start_date: str, expiry_date: str,
+                             status: str = "Active", project_name: str = "",
+                             project_description: str = "", contract_type: str = "",
+                             payment_terms: str = "") -> bool:
+        """Update an existing purchase order"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Get old status for history tracking
+            cursor.execute("SELECT status FROM purchase_orders WHERE id = ?", (po_id,))
+            result = cursor.fetchone()
+            if not result:
+                return False
+            old_status = result[0]
+            
+            cursor.execute("""
+                UPDATE purchase_orders 
+                SET po_number = ?, sbu_id = ?, client_id = ?, po_value = ?, currency = ?,
+                    start_date = ?, expiry_date = ?, status = ?, project_name = ?,
+                    project_description = ?, contract_type = ?, payment_terms = ?,
+                    last_updated = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (po_number, sbu_id, client_id, po_value, currency, start_date, expiry_date,
+                  status, project_name, project_description, contract_type, payment_terms, po_id))
+            
+            # Add to status history if status changed
+            if old_status != status:
+                cursor.execute("""
+                    INSERT INTO po_status_history (po_id, old_status, new_status, notes) 
+                    VALUES (?, ?, ?, ?)
+                """, (po_id, old_status, status, "Updated via edit"))
+            
+            conn.commit()
+            return cursor.rowcount > 0
+    
+    def delete_purchase_order(self, po_id: int) -> bool:
+        """Delete a purchase order"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            
+            # Delete from status history first (foreign key constraint)
+            cursor.execute("DELETE FROM po_status_history WHERE po_id = ?", (po_id,))
+            
+            # Delete the purchase order
+            cursor.execute("DELETE FROM purchase_orders WHERE id = ?", (po_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+    
+    def get_client_by_id(self, client_id: int) -> Optional[Dict]:
+        """Get a specific client by ID"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM client_companies WHERE id = ?", (client_id,))
+            result = cursor.fetchone()
+            return dict(result) if result else None
+    
+    def get_purchase_order_by_id(self, po_id: int) -> Optional[Dict]:
+        """Get a specific purchase order by ID with joined data"""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT po.*, sbu.name as sbu_name, cc.name as client_name
+                FROM purchase_orders po
+                JOIN sbu ON po.sbu_id = sbu.id
+                JOIN client_companies cc ON po.client_id = cc.id
+                WHERE po.id = ?
+            """, (po_id,))
+            result = cursor.fetchone()
+            return dict(result) if result else None

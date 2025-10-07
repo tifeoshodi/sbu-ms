@@ -680,7 +680,7 @@ def data_entry_page():
     db_manager = st.session_state.db_manager
     
     # Create tabs for different entry types
-    tab1, tab2, tab3, tab4 = st.tabs(["SBU Entry", "SBU Management", "Client Entry", "Purchase Order Entry"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["SBU Entry", "SBU Management", "Client Entry", "Client Management", "Purchase Order Entry", "PO Management"])
     
     with tab1:
         st.subheader("Add New Strategic Business Unit")
@@ -948,6 +948,242 @@ def data_entry_page():
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error saving purchase order: {e}")
+    
+    with tab4:
+        st.subheader("Manage Existing Clients")
+        
+        # Get existing clients
+        existing_clients = db_manager.get_clients()
+        
+        if not existing_clients:
+            st.info("No clients found. Add a client using the 'Client Entry' tab.")
+        else:
+            st.write("**Select a client to edit or remove:**")
+            
+            # Create expandable sections for each client
+            for i, client in enumerate(existing_clients):
+                with st.expander(f"Client: {client['name']} ({client.get('industry_sector', 'N/A')})"):
+                    col1, col2 = st.columns([3, 1])
+                    
+                    with col1:
+                        # Editable form for this client
+                        with st.form(f"edit_client_{client['id']}"):
+                            edit_name = st.text_input("Company Name", value=client['name'], key=f"edit_client_name_{client['id']}")
+                            
+                            col_a, col_b = st.columns(2)
+                            with col_a:
+                                edit_industry = st.selectbox(
+                                    "Industry Sector",
+                                    ["", "Oil & Gas Upstream", "Oil & Gas Midstream", "Oil & Gas Downstream",
+                                     "Petrochemicals", "Renewable Energy", "Mining", "Power Generation",
+                                     "Manufacturing", "Other"],
+                                    index=["", "Oil & Gas Upstream", "Oil & Gas Midstream", "Oil & Gas Downstream",
+                                           "Petrochemicals", "Renewable Energy", "Mining", "Power Generation",
+                                           "Manufacturing", "Other"].index(client.get('industry_sector', '')) 
+                                           if client.get('industry_sector', '') in ["", "Oil & Gas Upstream", "Oil & Gas Midstream", 
+                                           "Oil & Gas Downstream", "Petrochemicals", "Renewable Energy", "Mining", 
+                                           "Power Generation", "Manufacturing", "Other"] else 0,
+                                    key=f"edit_client_industry_{client['id']}"
+                                )
+                                edit_contact = st.text_input("Contact Person", value=client.get('contact_person', ''), key=f"edit_client_contact_{client['id']}")
+                                edit_email = st.text_input("Email", value=client.get('email', ''), key=f"edit_client_email_{client['id']}")
+                            
+                            with col_b:
+                                edit_phone = st.text_input("Phone", value=client.get('phone', ''), key=f"edit_client_phone_{client['id']}")
+                                edit_address = st.text_area("Address", value=client.get('address', ''), key=f"edit_client_address_{client['id']}")
+                                edit_country = st.selectbox(
+                                    "Country",
+                                    ["", "United States", "Canada", "United Kingdom", "Norway", "Netherlands",
+                                     "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", "Brazil", 
+                                     "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
+                                     "Russia", "Other"],
+                                    index=["", "United States", "Canada", "United Kingdom", "Norway", "Netherlands",
+                                           "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", "Brazil", 
+                                           "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
+                                           "Russia", "Other"].index(client.get('country', ''))
+                                           if client.get('country', '') in ["", "United States", "Canada", "United Kingdom", 
+                                           "Norway", "Netherlands", "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", 
+                                           "Brazil", "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
+                                           "Russia", "Other"] else 0,
+                                    key=f"edit_client_country_{client['id']}"
+                                )
+                            
+                            col_save, col_cancel = st.columns(2)
+                            with col_save:
+                                if st.form_submit_button("Save Changes", type="primary"):
+                                    try:
+                                        # Update client
+                                        db_manager.update_client(
+                                            client_id=client['id'],
+                                            name=edit_name,
+                                            industry_sector=edit_industry,
+                                            contact_person=edit_contact,
+                                            email=edit_email,
+                                            phone=edit_phone,
+                                            address=edit_address,
+                                            country=edit_country
+                                        )
+                                        st.success(f"Client '{edit_name}' updated successfully!")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Error updating client: {e}")
+                    
+                    with col2:
+                        st.write("**Danger Zone**")
+                        if st.button(f"Delete Client", key=f"delete_client_{client['id']}", type="secondary"):
+                            try:
+                                db_manager.delete_client(client['id'])
+                                st.success(f"Client '{client['name']}' deleted successfully!")
+                                st.rerun()
+                            except ValueError as ve:
+                                st.error(str(ve))
+                            except Exception as e:
+                                st.error(f"Error deleting client: {e}")
+    
+    with tab6:
+        st.subheader("Manage Existing Purchase Orders")
+        
+        # Get existing purchase orders
+        existing_pos = db_manager.get_purchase_orders()
+        
+        if not existing_pos:
+            st.info("No purchase orders found. Add a purchase order using the 'Purchase Order Entry' tab.")
+        else:
+            # Add search/filter options
+            st.write("**Filter Options:**")
+            filter_col1, filter_col2, filter_col3 = st.columns(3)
+            
+            with filter_col1:
+                filter_sbu = st.selectbox("Filter by SBU", ["All"] + list(set([po['sbu_name'] for po in existing_pos])))
+            
+            with filter_col2:
+                filter_status = st.selectbox("Filter by Status", ["All", "Active", "Pending", "On Hold", "Completed", "Cancelled"])
+            
+            with filter_col3:
+                filter_client = st.selectbox("Filter by Client", ["All"] + list(set([po['client_name'] for po in existing_pos])))
+            
+            # Apply filters
+            filtered_pos = existing_pos
+            if filter_sbu != "All":
+                filtered_pos = [po for po in filtered_pos if po['sbu_name'] == filter_sbu]
+            if filter_status != "All":
+                filtered_pos = [po for po in filtered_pos if po['status'] == filter_status]
+            if filter_client != "All":
+                filtered_pos = [po for po in filtered_pos if po['client_name'] == filter_client]
+            
+            st.write(f"**Showing {len(filtered_pos)} of {len(existing_pos)} purchase orders:**")
+            
+            # Get data for dropdowns
+            sbus = db_manager.get_sbus()
+            clients = db_manager.get_clients()
+            
+            # Create expandable sections for each PO
+            for i, po in enumerate(filtered_pos):
+                with st.expander(f"PO: {po['po_number']} - {po['client_name']} ({po['status']}) - ${po['po_value']:,.2f}"):
+                    col1, col2 = st.columns([3, 1])
+                    
+                    with col1:
+                        # Editable form for this PO
+                        with st.form(f"edit_po_{po['id']}"):
+                            col_po1, col_po2 = st.columns(2)
+                            
+                            with col_po1:
+                                edit_po_number = st.text_input("PO Number", value=po['po_number'], key=f"edit_po_number_{po['id']}")
+                                
+                                # SBU dropdown - find current index
+                                sbu_options = {sbu['name']: sbu['id'] for sbu in sbus}
+                                sbu_names = list(sbu_options.keys())
+                                current_sbu_idx = sbu_names.index(po['sbu_name']) if po['sbu_name'] in sbu_names else 0
+                                edit_sbu = st.selectbox("Strategic Business Unit", sbu_names, index=current_sbu_idx, key=f"edit_po_sbu_{po['id']}")
+                                
+                                # Client dropdown - find current index
+                                client_options = {client['name']: client['id'] for client in clients}
+                                client_names = list(client_options.keys())
+                                current_client_idx = client_names.index(po['client_name']) if po['client_name'] in client_names else 0
+                                edit_client = st.selectbox("Client Company", client_names, index=current_client_idx, key=f"edit_po_client_{po['id']}")
+                                
+                                col_curr, col_val = st.columns([1, 3])
+                                with col_curr:
+                                    currencies = ["USD", "EUR", "GBP", "CAD", "AUD"]
+                                    curr_idx = currencies.index(po['currency']) if po['currency'] in currencies else 0
+                                    edit_currency = st.selectbox("Currency", currencies, index=curr_idx, key=f"edit_po_currency_{po['id']}")
+                                with col_val:
+                                    edit_po_value = st.number_input("PO Value", min_value=0.01, value=float(po['po_value']), step=1000.0, format="%.2f", key=f"edit_po_value_{po['id']}")
+                                
+                                # Convert date strings to date objects
+                                from datetime import datetime
+                                start_date_obj = datetime.strptime(po['start_date'], "%Y-%m-%d").date()
+                                expiry_date_obj = datetime.strptime(po['expiry_date'], "%Y-%m-%d").date()
+                                
+                                edit_start_date = st.date_input("Start Date", value=start_date_obj, key=f"edit_po_start_{po['id']}")
+                                edit_expiry_date = st.date_input("Expiry Date", value=expiry_date_obj, key=f"edit_po_expiry_{po['id']}")
+                            
+                            with col_po2:
+                                statuses = ["Active", "Pending", "On Hold", "Completed", "Cancelled"]
+                                status_idx = statuses.index(po['status']) if po['status'] in statuses else 0
+                                edit_status = st.selectbox("Status", statuses, index=status_idx, key=f"edit_po_status_{po['id']}")
+                                
+                                edit_project_name = st.text_input("Project Name", value=po.get('project_name', ''), key=f"edit_po_project_{po['id']}")
+                                
+                                edit_project_desc = st.text_area("Project Description", value=po.get('project_description', ''), key=f"edit_po_desc_{po['id']}")
+                                
+                                contract_types = ["", "FEED (Front-End Engineering Design)",
+                                                "EPC (Engineering, Procurement, Construction)",
+                                                "EPCM (Engineering, Procurement, Construction Management)",
+                                                "Engineering Services Only", "Consulting Services",
+                                                "Maintenance Contract", "Other"]
+                                contract_idx = contract_types.index(po.get('contract_type', '')) if po.get('contract_type', '') in contract_types else 0
+                                edit_contract_type = st.selectbox("Contract Type", contract_types, index=contract_idx, key=f"edit_po_contract_{po['id']}")
+                                
+                                edit_payment_terms = st.text_input("Payment Terms", value=po.get('payment_terms', ''), key=f"edit_po_payment_{po['id']}")
+                            
+                            col_save, col_cancel = st.columns(2)
+                            with col_save:
+                                if st.form_submit_button("Save Changes", type="primary"):
+                                    # Validation
+                                    errors = []
+                                    if not edit_po_number.strip():
+                                        errors.append("PO Number is required")
+                                    if edit_po_value <= 0:
+                                        errors.append("PO Value must be greater than 0")
+                                    if edit_start_date >= edit_expiry_date:
+                                        errors.append("Start Date must be before Expiry Date")
+                                    
+                                    if errors:
+                                        for error in errors:
+                                            st.error(f"Error: {error}")
+                                    else:
+                                        try:
+                                            # Update purchase order
+                                            db_manager.update_purchase_order(
+                                                po_id=po['id'],
+                                                po_number=edit_po_number.strip(),
+                                                sbu_id=sbu_options[edit_sbu],
+                                                client_id=client_options[edit_client],
+                                                po_value=edit_po_value,
+                                                currency=edit_currency,
+                                                start_date=edit_start_date.strftime("%Y-%m-%d"),
+                                                expiry_date=edit_expiry_date.strftime("%Y-%m-%d"),
+                                                status=edit_status,
+                                                project_name=edit_project_name.strip(),
+                                                project_description=edit_project_desc.strip(),
+                                                contract_type=edit_contract_type,
+                                                payment_terms=edit_payment_terms.strip()
+                                            )
+                                            st.success(f"Purchase Order '{edit_po_number}' updated successfully!")
+                                            st.rerun()
+                                        except Exception as e:
+                                            st.error(f"Error updating purchase order: {e}")
+                    
+                    with col2:
+                        st.write("**Danger Zone**")
+                        if st.button(f"Delete PO", key=f"delete_po_{po['id']}", type="secondary"):
+                            try:
+                                db_manager.delete_purchase_order(po['id'])
+                                st.success(f"Purchase Order '{po['po_number']}' deleted successfully!")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error deleting purchase order: {e}")
 
 
 def analytics_page():
