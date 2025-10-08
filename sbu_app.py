@@ -445,6 +445,20 @@ def initialize_database():
     return st.session_state.db_manager
 
 
+def format_currency(value: float, currency: str = "USD") -> str:
+    """Format currency with thousand separators"""
+    if value is None or pd.isna(value):
+        return f"{currency} 0.00"
+    return f"{currency} {value:,.2f}"
+
+
+def format_number(value: float) -> str:
+    """Format number with thousand separators"""
+    if value is None or pd.isna(value):
+        return "0"
+    return f"{value:,.0f}" if value == int(value) else f"{value:,.2f}"
+
+
 def render_header():
     """Render the main header"""
     st.markdown("""
@@ -562,13 +576,28 @@ def dashboard_page():
         sbu_df_display = sbu_df.rename(columns=display_columns)
         sbu_df_display['Manager'] = sbu_df_display['Manager'].fillna('Not assigned')
         
-        st.data_editor(
-            sbu_df_display,
-            width="stretch",
-            hide_index=True,
-            use_container_width=True,
-            disabled=True
-        )
+        # Column visibility control
+        all_columns = list(sbu_df_display.columns)
+        default_columns = ['SBU', 'Manager', 'Total POs', 'Total Value (USD)', 'Active']
+        
+        with st.expander("🔧 Column Visibility Settings", expanded=False):
+            selected_columns = st.multiselect(
+                "Select columns to display:",
+                options=all_columns,
+                default=[col for col in default_columns if col in all_columns],
+                key="sbu_summary_columns"
+            )
+        
+        # Display only selected columns
+        if selected_columns:
+            st.dataframe(
+                sbu_df_display[selected_columns],
+                width="stretch",
+                hide_index=True,
+                use_container_width=True
+            )
+        else:
+            st.warning("Please select at least one column to display.")
         
         # SBU Performance Charts
         col1, col2 = st.columns(2)
@@ -631,11 +660,28 @@ def dashboard_page():
                               'start_date', 'expiry_date', 'status']].copy()
         final_df.columns = ['PO Number', 'SBU', 'Client', 'Value', 'Start Date', 'Expiry Date', 'Status']
         
-        st.dataframe(
-            final_df,
-            width="stretch",
-            hide_index=True
-        )
+        # Column visibility control
+        all_po_columns = list(final_df.columns)
+        default_po_columns = ['PO Number', 'Client', 'Value', 'Start Date', 'Status']
+        
+        with st.expander("🔧 Column Visibility Settings", expanded=False):
+            selected_po_columns = st.multiselect(
+                "Select columns to display:",
+                options=all_po_columns,
+                default=[col for col in default_po_columns if col in all_po_columns],
+                key="recent_pos_columns"
+            )
+        
+        # Display only selected columns
+        if selected_po_columns:
+            st.dataframe(
+                final_df[selected_po_columns],
+                width="stretch",
+                hide_index=True,
+                use_container_width=True
+            )
+        else:
+            st.warning("Please select at least one column to display.")
     else:
         st.info("No recent purchase orders available.")
     
@@ -703,7 +749,9 @@ def data_entry_page():
             
             with col2:
                 location = st.text_input("Location", placeholder="e.g., Lagos, NG")
-                budget = st.number_input("Annual Budget (USD)", min_value=0.0, value=0.0, step=1000.0)
+                budget = st.number_input("Annual Budget (USD)", min_value=0.0, value=0.0, step=1000.0, format="%.2f")
+                if budget > 0:
+                    st.caption(f"💰 Formatted: {format_currency(budget, 'USD')}")
                 description = st.text_area("Description", placeholder="Brief description of SBU activities...")
             
             submitted = st.form_submit_button("Add SBU", type="primary")
@@ -816,6 +864,8 @@ def data_entry_page():
                         with st.form(f"edit_sbu_{sbu['id']}"):
                             edit_name = st.text_input("SBU Name", value=sbu['name'], key=f"edit_name_{sbu['id']}")
                             edit_manager = st.text_input("Manager", value=sbu['manager'], key=f"edit_manager_{sbu['id']}")
+                            edit_location = st.text_input("Location", value=sbu.get('location', ''), key=f"edit_location_{sbu['id']}")
+                            edit_budget = st.number_input("Annual Budget (USD)", min_value=0.0, value=float(sbu.get('budget', 0.0)), step=1000.0, format="%.2f", key=f"edit_budget_{sbu['id']}")
                             edit_description = st.text_area("Description", value=sbu.get('description', ''), key=f"edit_desc_{sbu['id']}")
                             
                             col_save, col_cancel = st.columns(2)
@@ -827,9 +877,9 @@ def data_entry_page():
                                         with sqlite3.connect(db_manager.db_path) as conn:
                                             cursor = conn.cursor()
                                             cursor.execute("""
-                                                UPDATE sbu SET name = ?, manager = ?, description = ?
+                                                UPDATE sbu SET name = ?, manager = ?, location = ?, budget = ?, description = ?
                                                 WHERE id = ?
-                                            """, (edit_name, edit_manager, edit_description, sbu['id']))
+                                            """, (edit_name, edit_manager, edit_location, edit_budget, edit_description, sbu['id']))
                                             conn.commit()
                                         
                                         st.success(f"SBU '{edit_name}' updated successfully!")
@@ -859,7 +909,7 @@ def data_entry_page():
                                 except Exception as e:
                                     st.error(f"Error deleting SBU: {e}")
     
-    with tab4:
+    with tab5:
         st.subheader("Add New Purchase Order")
         
         # Get data for dropdowns
@@ -891,6 +941,9 @@ def data_entry_page():
                     currency = st.selectbox("Currency", ["USD", "EUR", "GBP", "CAD", "AUD"])
                 with col_val:
                     po_value = st.number_input("PO Value *", min_value=0.01, step=1000.0, format="%.2f")
+                
+                if po_value > 0:
+                    st.caption(f"💰 Formatted: {format_currency(po_value, currency)}")
                 
                 start_date = st.date_input("Start Date *", value=date.today())
                 expiry_date = st.date_input("Expiry Date *", value=date.today() + timedelta(days=365))
@@ -1109,6 +1162,9 @@ def data_entry_page():
                                     edit_currency = st.selectbox("Currency", currencies, index=curr_idx, key=f"edit_po_currency_{po['id']}")
                                 with col_val:
                                     edit_po_value = st.number_input("PO Value", min_value=0.01, value=float(po['po_value']), step=1000.0, format="%.2f", key=f"edit_po_value_{po['id']}")
+                                
+                                if edit_po_value > 0:
+                                    st.caption(f"💰 Formatted: {format_currency(edit_po_value, edit_currency)}")
                                 
                                 # Convert date strings to date objects
                                 from datetime import datetime

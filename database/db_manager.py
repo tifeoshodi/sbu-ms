@@ -30,10 +30,23 @@ class DatabaseManager:
                     name TEXT NOT NULL UNIQUE,
                     description TEXT,
                     manager TEXT,
+                    location TEXT,
+                    budget REAL DEFAULT 0.0,
                     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     is_active BOOLEAN DEFAULT 1
                 )
             """)
+            
+            # Add location and budget columns if they don't exist (migration)
+            try:
+                cursor.execute("ALTER TABLE sbu ADD COLUMN location TEXT")
+            except:
+                pass  # Column already exists
+            
+            try:
+                cursor.execute("ALTER TABLE sbu ADD COLUMN budget REAL DEFAULT 0.0")
+            except:
+                pass  # Column already exists
             
             # Create Client Companies table
             cursor.execute("""
@@ -103,8 +116,8 @@ class DatabaseManager:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO sbu (name, description, manager) VALUES (?, ?, ?)
-            """, (name, description, manager))
+                INSERT INTO sbu (name, description, manager, location, budget) VALUES (?, ?, ?, ?, ?)
+            """, (name, description, manager, location, budget))
             return cursor.lastrowid
     
     def clear_database(self):
