@@ -1,0 +1,246 @@
+[2025-10-12 12:23:12] ================================================================================
+[2025-10-12 12:23:12] SBU PURCHASE ORDER DATA MIGRATION
+[2025-10-12 12:23:12] ================================================================================
+[2025-10-12 12:23:12] Started at: 2025-10-12 12:23:12
+[2025-10-12 12:23:12] ✓ Database backed up to: backup_before_migration_20251012_122312.db
+[2025-10-12 12:23:12] 
+================================================================================
+[2025-10-12 12:23:13] STEP 1: Loading SBU Register
+[2025-10-12 12:23:13] ================================================================================
+[2025-10-12 12:23:13] Found 6 SBUs in register
+[2025-10-12 12:23:13]   ✓ Added SBU: TECHNICAL CONSULTANCY SERVICES (ID: 14)
+[2025-10-12 12:23:13]   ✓ Added SBU: POWER & RENEWABLES (ID: 15)
+[2025-10-12 12:23:14]   ✓ Added SBU: ENGINEERING, DESIGN AND CONSTRUCTION (ID: 16)
+[2025-10-12 12:23:14]   ✓ Added SBU: PROJECT MANAGEMENT CONSULTANCY SERVICES (ID: 17)
+[2025-10-12 12:23:14]   ✓ Added SBU: GLOBAL COMMERCIAL MANAGEMENT (ID: 18)
+[2025-10-12 12:23:15]   ✓ Added SBU: OILFIELD SUPPLY AND SERVICES (ID: 19)
+[2025-10-12 12:23:15] 
+✓ Successfully loaded 6 new SBUs
+[2025-10-12 12:23:15] Total SBUs in mapping: 12
+[2025-10-12 12:23:15] 
+================================================================================
+[2025-10-12 12:23:15] STEP 2: Loading and Cleaning PO Data Files
+[2025-10-12 12:23:16] ================================================================================
+[2025-10-12 12:23:16] 
+  Reading file: 2025 Purchase orders - ED&C.xlsx
+[2025-10-12 12:23:29]   Found 135 records in 2025 Purchase orders - ED&C.xlsx
+[2025-10-12 12:23:29]   Removed 13 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:23:29]   Removed 39 rows with invalid or zero USD values
+[2025-10-12 12:23:29]   ✓ Cleaned 83 valid records from ED&C
+[2025-10-12 12:23:29] 
+  Reading file: 2025 Purchase orders - GCM.xlsx
+[2025-10-12 12:23:30]   Found 137 records in 2025 Purchase orders - GCM.xlsx
+[2025-10-12 12:23:30]   Removed 74 rows with invalid or zero USD values
+[2025-10-12 12:23:30]   ✓ Cleaned 63 valid records from GCM
+[2025-10-12 12:23:30] 
+  Reading file: 2025 Purchase orders - PMC.xlsx
+[2025-10-12 12:23:30]   Found 6 records in 2025 Purchase orders - PMC.xlsx
+[2025-10-12 12:23:31]   Removed 6 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:23:31]   ✓ Cleaned 0 valid records from PMC
+[2025-10-12 12:23:31] 
+  Reading file: 2025 Purchase orders - TSS.xlsx
+[2025-10-12 12:23:31]   Found 28 records in 2025 Purchase orders - TSS.xlsx
+[2025-10-12 12:23:31]   Removed 2 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:23:32]   ✓ Cleaned 26 valid records from TSS
+[2025-10-12 12:23:32] 
+  Reading file: 2025 Purchase orders OSS.xlsx
+[2025-10-12 12:23:32]   Found 42 records in 2025 Purchase orders OSS.xlsx
+[2025-10-12 12:23:32]   Removed 1 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:23:32]   Removed 1 rows with invalid or zero USD values
+[2025-10-12 12:23:32]   ✓ Cleaned 40 valid records from OSS
+[2025-10-12 12:23:33] 
+✓ Total records loaded: 212
+[2025-10-12 12:23:33]   Unique PO Numbers: 164
+[2025-10-12 12:23:33]   Unique Clients: 47
+[2025-10-12 12:23:33]   SBUs represented: 4
+[2025-10-12 12:23:33] 
+================================================================================
+[2025-10-12 12:23:33] STEP 3: Migrating Client Companies
+[2025-10-12 12:23:33] ================================================================================
+[2025-10-12 12:23:34] Found 47 unique clients
+[2025-10-12 12:23:34]   ✓ Added client: ACCU GAS - SAVANNAH ENERGY (ID: 4)
+[2025-10-12 12:23:34]   ✓ Added client: DAEWOO (ID: 5)
+[2025-10-12 12:23:34]   ✓ Added client: NLNG (ID: 6)
+[2025-10-12 12:23:35]   ✓ Added client: TOTAL ENERGIES (ID: 7)
+[2025-10-12 12:23:35]   ✓ Added client: NEPN (ID: 8)
+[2025-10-12 12:23:35]   ✓ Added client: SEPLAT (ID: 9)
+[2025-10-12 12:23:35]   ✓ Added client: SNEPCO (ID: 10)
+[2025-10-12 12:23:36]   ✓ Added client: JOCAM (ID: 11)
+[2025-10-12 12:23:36]   ✓ Added client: RADIAL CIRCLE (ID: 12)
+[2025-10-12 12:23:36]   ✓ Added client: SCHNEIDER (ID: 13)
+[2025-10-12 12:23:36]   ✓ Added client: MANTRAC (ID: 14)
+[2025-10-12 12:23:37]   ✓ Added client: ZUPT (ID: 15)
+[2025-10-12 12:23:37]   ✓ Added client: SEPNU (ID: 16)
+[2025-10-12 12:23:37]   ✓ Added client: FAWEL & LIQUID ENERGY (ID: 17)
+[2025-10-12 12:23:37]   ✓ Added client: RAEC (ID: 18)
+[2025-10-12 12:23:37]   ✓ Added client: SHELL (ID: 19)
+[2025-10-12 12:23:37]   ✓ Added client: RENAISSANCE (ID: 20)
+[2025-10-12 12:23:38]   ✓ Added client: STATMARINE (ID: 21)
+[2025-10-12 12:23:38]   ✓ Added client: BH (ID: 22)
+[2025-10-12 12:23:38]   ✓ Added client: ANTAN (ID: 23)
+[2025-10-12 12:23:38]   ✓ Added client: SPDC (ID: 24)
+[2025-10-12 12:23:38]   ✓ Added client: TOTALENERGIES (ID: 25)
+[2025-10-12 12:23:39]   ✓ Added client: EXXONMOBIL(ESSO EPNL) (ID: 26)
+[2025-10-12 12:23:39]   ✓ Added client: OANDO PLC (ID: 27)
+[2025-10-12 12:23:39]   ✓ Added client: NIGERIA LNG (ID: 28)
+[2025-10-12 12:23:39]   ✓ Added client: ORIENTAL (ID: 29)
+[2025-10-12 12:23:40]   ✓ Added client: SCHLUMBERGER (ID: 30)
+[2025-10-12 12:23:40]   ✓ Added client: CAMERON (ID: 31)
+[2025-10-12 12:23:40]   ✓ Added client: BBCL (ID: 32)
+[2025-10-12 12:23:40]   ✓ Added client: FSCO (ID: 33)
+[2025-10-12 12:23:40]   ✓ Added client: WALKIN CUSTOMER (ID: 34)
+[2025-10-12 12:23:40]   ✓ Added client: BENABIG (ID: 35)
+[2025-10-12 12:23:40]   ✓ Added client: WAPCO (ID: 36)
+[2025-10-12 12:23:41]   ✓ Added client: STUZANS ENERGY LIMITED (ID: 37)
+[2025-10-12 12:23:41]   ✓ Added client: TAG ENERGY (ID: 38)
+[2025-10-12 12:23:41]   ✓ Added client: EXXON MOBIL (ID: 39)
+[2025-10-12 12:23:42]   ✓ Added client: SAIPEM (ID: 40)
+[2025-10-12 12:23:42]   ✓ Added client: PACE (ID: 41)
+[2025-10-12 12:23:42]   ✓ Added client: CHEVRON (ID: 42)
+[2025-10-12 12:23:42]   ✓ Added client: TFMC (ID: 43)
+[2025-10-12 12:23:43]   ✓ Added client: JULINAT (ID: 44)
+[2025-10-12 12:23:43]   ✓ Added client: HILLKING (ID: 45)
+[2025-10-12 12:23:43]   ✓ Added client: COTEC (ID: 46)
+[2025-10-12 12:23:43]   ✓ Added client: BENABIGAIL (ID: 47)
+[2025-10-12 12:23:44]   ✓ Added client: VANJES & ELIAT LIMITED (ID: 48)
+[2025-10-12 12:23:44]   ✓ Added client: UNIVERSAL AUTOMATION NIGERIA LIMITED (ID: 49)
+[2025-10-12 12:23:44] 
+✓ Successfully migrated 46 new clients
+[2025-10-12 12:23:44] Total clients in mapping: 46
+[2025-10-12 12:23:44] 
+================================================================================
+[2025-10-12 12:23:45] STEP 4: Migrating Purchase Orders
+[2025-10-12 12:23:45] ================================================================================
+[2025-10-12 12:23:45]   ✓ Added PO: 4500002508 | ACCU GAS - SAVANNAH ENERGY | $262,709.79
+[2025-10-12 12:23:45]   ✓ Added PO: DECN-KLTSC-001 | DAEWOO | $277,814.69
+[2025-10-12 12:23:45]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:23:45]   ✓ Added PO: 4400010271 | NLNG | $54,103.23
+[2025-10-12 12:23:46]   ✓ Added PO: 4560190915, 4560190916 | TOTAL ENERGIES | $150,735.00
+[2025-10-12 12:23:46]   ✓ Added PO: 901 | NEPN | $43,665.29
+[2025-10-12 12:23:48]   ⚠ PO already exists: 4510520302/10
+[2025-10-12 12:23:48]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:23:48]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:23:48]   ⚠ PO already exists: 4510523313/30
+[2025-10-12 12:23:48]   ⚠ PO already exists: 4510523313/40
+[2025-10-12 12:23:49]   ⚠ PO already exists: 4510522478/10
+[2025-10-12 12:23:49]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:23:49]   Progress: 50 POs migrated...
+[2025-10-12 12:23:49]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:23:49]   ⚠ PO already exists: 4510527512/10
+[2025-10-12 12:23:50]   ⚠ PO already exists: 4510504249/40
+[2025-10-12 12:23:50]   ⚠ PO already exists: 4510503650/40
+[2025-10-12 12:23:50]   ⚠ PO already exists: 4510525208/20
+[2025-10-12 12:23:50]   ⚠ PO already exists: 4510525341/10
+[2025-10-12 12:23:51]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:23:51]   ⚠ PO already exists: 950214841.0
+[2025-10-12 12:23:51]   ⚠ PO already exists: 950214835.0
+[2025-10-12 12:23:51]   ⚠ PO already exists: 950214845.0
+[2025-10-12 12:23:52]   ⚠ PO already exists: 950214858.0
+[2025-10-12 12:23:52]   ⚠ PO already exists: 950214857.0
+[2025-10-12 12:23:52]   ⚠ PO already exists: 950214842.0
+[2025-10-12 12:23:52]   ⚠ PO already exists: 950214840.0
+[2025-10-12 12:23:52]   ⚠ PO already exists: 950214815.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950214816.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950215954.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950217256.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950219183.0
+[2025-10-12 12:23:53]   ⚠ PO already exists: 950219058.0
+[2025-10-12 12:23:54]   ⚠ PO already exists: 950219056.0
+[2025-10-12 12:23:54]   ⚠ PO already exists: 950219053.0
+[2025-10-12 12:23:54]   ⚠ PO already exists: 950219179.0
+[2025-10-12 12:23:54]   ⚠ PO already exists: 950222138.0
+[2025-10-12 12:23:54]   ⚠ PO already exists: 950223572.0
+[2025-10-12 12:23:55]   ⚠ PO already exists: 950225342.0
+[2025-10-12 12:23:55]   ⚠ PO already exists: 950224982.0
+[2025-10-12 12:23:55]   ⚠ PO already exists: 950231420.0
+[2025-10-12 12:23:55]   ⚠ PO already exists: 950231391.0
+[2025-10-12 12:23:56]   ⚠ PO already exists: 950233049.0
+[2025-10-12 12:23:56]   ⚠ PO already exists: 950233468.0
+[2025-10-12 12:23:57]   ⚠ PO already exists: 950234045.0
+[2025-10-12 12:23:57]   ⚠ PO already exists: 950238293.0
+[2025-10-12 12:23:57]   ⚠ PO already exists: 950240053.0
+[2025-10-12 12:23:58]   ⚠ PO already exists: 950242475.0
+[2025-10-12 12:23:58]   ⚠ PO already exists: 950244761.0
+[2025-10-12 12:24:02]   Progress: 100 POs migrated...
+[2025-10-12 12:24:07] 
+✓ Successfully migrated 138 purchase orders
+[2025-10-12 12:24:07] ⚠ Skipped 74 records
+[2025-10-12 12:24:07] 
+================================================================================
+[2025-10-12 12:24:07] MIGRATION SUMMARY REPORT
+[2025-10-12 12:24:07] ================================================================================
+[2025-10-12 12:24:08] 
+📊 DATABASE STATISTICS:
+[2025-10-12 12:24:08]   Total SBUs: 6
+[2025-10-12 12:24:08]   Total Clients: 34
+[2025-10-12 12:24:08]   Total Purchase Orders: 138
+[2025-10-12 12:24:08]   Total Portfolio Value: $42,101,886.46
+[2025-10-12 12:24:08]   Average PO Value: $305,086.13
+[2025-10-12 12:24:08] 
+📈 PO STATUS BREAKDOWN:
+[2025-10-12 12:24:08]   Active: 138
+[2025-10-12 12:24:09]   Completed: 0
+[2025-10-12 12:24:09]   Cancelled: 0
+[2025-10-12 12:24:09] 
+🏢 SBU BREAKDOWN:
+[2025-10-12 12:24:09]   ENGINEERING, DESIGN AND CONSTRUCTION: 67 POs | $25,848,927.03
+[2025-10-12 12:24:09]   OILFIELD SUPPLY AND SERVICES: 40 POs | $15,918,096.99
+[2025-10-12 12:24:09]   GLOBAL COMMERCIAL MANAGEMENT: 31 POs | $334,862.45
+[2025-10-12 12:24:09]   TECHNICAL CONSULTANCY SERVICES: 0 POs | $0.00
+[2025-10-12 12:24:09]   POWER & RENEWABLES: 0 POs | $0.00
+[2025-10-12 12:24:09]   PROJECT MANAGEMENT CONSULTANCY SERVICES: 0 POs | $0.00
+[2025-10-12 12:24:09] 
+⚠️  EXPIRING POs (Next 90 days): 26
+[2025-10-12 12:24:09]   4510515435 | SNEPCO | 80 days remaining
+[2025-10-12 12:24:09]   4510515144/10 | SNEPCO | 80 days remaining
+[2025-10-12 12:24:09]   4510515144/20 | SNEPCO | 80 days remaining
+[2025-10-12 12:24:09]   4510518949/10 | SNEPCO | 80 days remaining
+[2025-10-12 12:24:09]   950214841.0 | BH | 80 days remaining
+[2025-10-12 12:24:09] 
+❌ ERRORS ENCOUNTERED: 27
+[2025-10-12 12:24:09]   [2025-10-12 12:23:47] ERROR: Client not found: 
+[2025-10-12 12:24:09]   [2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09]   [2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:09] 
+💾 Final database backup: backup_after_migration_20251012_122409.db
+
+================================================================================
+ERRORS:
+================================================================================
+[2025-10-12 12:23:47] ERROR: Client not found: 
+[2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:58] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:23:59] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:00] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:01] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:01] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:01] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:01] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:01] ERROR: SBU not found for code: TSS
+[2025-10-12 12:24:02] ERROR: SBU not found for code: TSS

@@ -16,8 +16,29 @@ class DatabaseManager:
     
     def __init__(self, db_path: str = "sbu_po_database.db"):
         self.db_path = db_path
+        self.backup_dir = "database_backups"
+        self._ensure_backup_directory()
         self.init_database()
+        self._auto_backup_on_startup()
         
+    def _ensure_backup_directory(self):
+        """Ensure backup directory exists"""
+        if not os.path.exists(self.backup_dir):
+            os.makedirs(self.backup_dir)
+    
+    def _auto_backup_on_startup(self):
+        """Create an automatic backup when database manager starts"""
+        if os.path.exists(self.db_path):
+            # Only backup if database has content
+            size = os.path.getsize(self.db_path)
+            if size > 0:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                backup_path = os.path.join(self.backup_dir, f"auto_backup_{timestamp}.db")
+                try:
+                    shutil.copy2(self.db_path, backup_path)
+                except Exception:
+                    pass  # Silent fail for auto-backup
+    
     def init_database(self):
         """Initialize database and create tables if they don't exist"""
         with sqlite3.connect(self.db_path) as conn:
@@ -80,12 +101,19 @@ class DatabaseManager:
                     project_description TEXT,
                     contract_type TEXT,
                     payment_terms TEXT,
+                    risk_factor INTEGER DEFAULT 3,
                     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (sbu_id) REFERENCES sbu (id),
                     FOREIGN KEY (client_id) REFERENCES client_companies (id)
                 )
             """)
+            
+            # Add risk_factor column if it doesn't exist (migration)
+            try:
+                cursor.execute("ALTER TABLE purchase_orders ADD COLUMN risk_factor INTEGER DEFAULT 3")
+            except:
+                pass  # Column already exists
             
             # Create PO Status History table for tracking
             cursor.execute("""
@@ -146,17 +174,17 @@ class DatabaseManager:
     def add_purchase_order(self, po_number: str, sbu_id: int, client_id: int, po_value: float,
                           currency: str, start_date: str, expiry_date: str, status: str = "Active",
                           project_name: str = "", project_description: str = "", 
-                          contract_type: str = "", payment_terms: str = "") -> int:
+                          contract_type: str = "", payment_terms: str = "", risk_factor: int = 3) -> int:
         """Add a new purchase order"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO purchase_orders 
                 (po_number, sbu_id, client_id, po_value, currency, start_date, expiry_date, 
-                 status, project_name, project_description, contract_type, payment_terms) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 status, project_name, project_description, contract_type, payment_terms, risk_factor) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (po_number, sbu_id, client_id, po_value, currency, start_date, expiry_date,
-                  status, project_name, project_description, contract_type, payment_terms))
+                  status, project_name, project_description, contract_type, payment_terms, risk_factor))
             po_id = cursor.lastrowid
             
             # Add to status history
@@ -379,10 +407,25 @@ class DatabaseManager:
         """Create a backup of the database"""
         if not backup_path:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_path = f"backup_sbu_po_{timestamp}.db"
+            backup_path = os.path.join(self.backup_dir, f"manual_backup_{timestamp}.db")
             
         shutil.copy2(self.db_path, backup_path)
         return backup_path
+    
+    def cleanup_old_backups(self, keep_last_n: int = 10):
+        """Clean up old automatic backups, keeping only the most recent N backups"""
+        try:
+            backups = [f for f in os.listdir(self.backup_dir) if f.startswith("auto_backup_") and f.endswith(".db")]
+            backups.sort(reverse=True)  # Most recent first
+            
+            # Delete old backups beyond keep_last_n
+            for old_backup in backups[keep_last_n:]:
+                try:
+                    os.remove(os.path.join(self.backup_dir, old_backup))
+                except Exception:
+                    pass
+        except Exception:
+            pass  # Silent fail for cleanup
         
     def get_expiring_pos(self, days_ahead: int = 30) -> List[Dict]:
         """Get POs expiring within specified days"""
@@ -445,7 +488,7 @@ class DatabaseManager:
                              po_value: float, currency: str, start_date: str, expiry_date: str,
                              status: str = "Active", project_name: str = "",
                              project_description: str = "", contract_type: str = "",
-                             payment_terms: str = "") -> bool:
+                             payment_terms: str = "", risk_factor: int = 3) -> bool:
         """Update an existing purchase order"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
@@ -461,11 +504,11 @@ class DatabaseManager:
                 UPDATE purchase_orders 
                 SET po_number = ?, sbu_id = ?, client_id = ?, po_value = ?, currency = ?,
                     start_date = ?, expiry_date = ?, status = ?, project_name = ?,
-                    project_description = ?, contract_type = ?, payment_terms = ?,
+                    project_description = ?, contract_type = ?, payment_terms = ?, risk_factor = ?,
                     last_updated = CURRENT_TIMESTAMP
                 WHERE id = ?
             """, (po_number, sbu_id, client_id, po_value, currency, start_date, expiry_date,
-                  status, project_name, project_description, contract_type, payment_terms, po_id))
+                  status, project_name, project_description, contract_type, payment_terms, risk_factor, po_id))
             
             # Add to status history if status changed
             if old_status != status:

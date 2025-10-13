@@ -25,7 +25,7 @@ pd.set_option('future.no_silent_downcasting', True)
 def configure_page():
     """Configure Streamlit page settings"""
     st.set_page_config(
-        page_title="SBU/PO Dashboard - Oil & Gas Engineering",
+        page_title="PO Dashboard - Oil & Gas Engineering",
         layout="wide",
         initial_sidebar_state="expanded"
     )
@@ -143,17 +143,19 @@ def configure_page():
     /* Professional metric cards */
     .metric-card {{
         background: var(--surface-color);
-        padding: 1.5rem 1rem;
+        padding: 1rem 0.75rem;
         border-radius: 12px;
         border: 1px solid var(--border-color);
         box-shadow: 0 2px 8px var(--shadow-color);
         text-align: center;
         margin-bottom: 1rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        min-height: 120px;
+        min-height: 130px;
+        max-height: 160px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
+        overflow: hidden;
     }}
     
     .metric-card:hover {{
@@ -164,31 +166,39 @@ def configure_page():
     
     .metric-value {{
         font-family: 'Inter', sans-serif;
-        font-size: 1.8rem;
+        font-size: clamp(1.2rem, 1.5vw, 1.8rem);
         font-weight: 700;
         color: var(--primary-color);
-        margin: 0.5rem 0;
+        margin: 0.3rem 0;
         line-height: 1.2;
         word-break: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }}
     
     .metric-label {{
         font-family: 'Inter', sans-serif;
-        font-size: 0.875rem;
+        font-size: clamp(0.7rem, 0.8vw, 0.875rem);
         font-weight: 600;
         color: var(--text-secondary);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }}
     
     .metric-subtitle {{
         font-family: 'Inter', sans-serif;
-        font-size: 0.75rem;
+        font-size: clamp(0.65rem, 0.75vw, 0.8rem);
         font-weight: 500;
         color: var(--text-secondary);
-        margin-top: 0.5rem;
+        margin-top: 0.25rem;
         opacity: 0.8;
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }}
     
     /* Professional form styling */
@@ -462,10 +472,15 @@ def format_number(value: float) -> str:
 def render_header():
     """Render the main header"""
     st.markdown("""
-    <div class="main-header">
-        <h1>SBU/PO Dashboard</h1>
-        <p>Strategic Business Unit & Purchase Order Management System</p>
-        <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.9;"></p>
+    <div class="main-header" style="position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.08; font-size: 8rem; font-weight: 800; color: white; pointer-events: none; z-index: 0;">
+            IESL
+        </div>
+        <div style="position: relative; z-index: 1;">
+            <h1>PO Dashboard</h1>
+            <p>Strategic Business Unit Purchase Order Management System</p>
+            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.9;"></p>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -492,6 +507,27 @@ def dashboard_page():
     
     db_manager = st.session_state.db_manager
     
+    # Exchange rate for USD to NGN
+    USD_TO_NGN = 1463.0
+    
+    # Initialize currency preference in session state
+    if 'currency_preference' not in st.session_state:
+        st.session_state.currency_preference = 'USD'
+    
+    # Currency Toggle
+    st.markdown("### Currency Display")
+    col_toggle1, col_toggle2, col_toggle3 = st.columns([1, 1, 4])
+    with col_toggle1:
+        if st.button("$ USD", type="primary" if st.session_state.currency_preference == 'USD' else "secondary", use_container_width=True):
+            st.session_state.currency_preference = 'USD'
+            st.rerun()
+    with col_toggle2:
+        if st.button("₦ NGN", type="primary" if st.session_state.currency_preference == 'NGN' else "secondary", use_container_width=True):
+            st.session_state.currency_preference = 'NGN'
+            st.rerun()
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
     # Get data
     try:
         total_summary = db_manager.get_total_summary()
@@ -502,414 +538,207 @@ def dashboard_page():
         st.error(f"Error loading data: {e}")
         return
     
-    # Executive Summary - Metrics in columns
-    st.subheader("Executive Summary")
+    # Get selected currency
+    selected_currency = st.session_state.currency_preference
+    currency_symbol = "$" if selected_currency == "USD" else "₦"
     
-    col1, col2, col3 = st.columns(3)
+    # Portfolio Overview Section
+    st.subheader("Portfolio Overview")
+    
+    # Portfolio Overview - 4 Cards in Single Row
+    col1, col2, col3, col4 = st.columns(4)
+    
+    # Calculate values based on selected currency
+    total_value = total_summary.get('total_value') or 0
+    avg_value = total_summary.get('avg_po_value') or 0
+    
+    if selected_currency == 'NGN':
+        total_value = total_value * USD_TO_NGN
+        avg_value = avg_value * USD_TO_NGN
     
     with col1:
         render_metric_card(
-            "Total Purchase Orders",
-            str(total_summary.get('total_pos', 0)),
-            "All time"
-        )
-        
-        render_metric_card(
-            "Average PO Value",
-            f"${(total_summary.get('avg_po_value') or 0):,.2f}",
-            "USD"
+            "Active POs",
+            str(total_summary.get('active_pos', 0)),
+            "Currently running"
         )
     
     with col2:
         render_metric_card(
             "Total Portfolio Value",
-            f"${(total_summary.get('total_value') or 0):,.2f}",
-            "USD"
-        )
-        
-        render_metric_card(
-            "Active SBU",
-            str(total_summary.get('active_sbus', 0)),
-            "Business units"
+            f"{currency_symbol}{total_value:,.2f}",
+            selected_currency
         )
     
     with col3:
         render_metric_card(
-            "Active PO",
-            str(total_summary.get('active_pos', 0)),
-            "Currently running"
+            "Avg PO Value",
+            f"{currency_symbol}{avg_value:,.0f}",
+            f"Per purchase order"
         )
-        
+    
+    with col4:
         render_metric_card(
-            "Total Clients",
+            "Client Count",
             str(total_summary.get('total_clients', 0)),
-            "Companies"
+            "Total clients"
         )
     
-    # Expiring POs Alert
-    if expiring_pos:
-        st.warning(f"**Alert**: {len(expiring_pos)} purchase orders worth ${sum(po['po_value'] for po in expiring_pos):,.2f} are expiring within 30 days!")
+    # SBU Overview Section
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.subheader("SBU Overview")
     
-    # SBU Performance Summary
-    st.subheader("SBU Performance Summary")
+    # Prepare SBU data mapping
+    sbu_name_mapping = {
+        "ENGINEERING, DESIGN AND CONSTRUCTION": "ED&C",
+        "GLOBAL COMMERCIAL MANAGEMENT": "GCM",
+        "OILFIELD SUPPLY AND SERVICES": "OSS",
+        "PROJECT MANAGEMENT CONSULTANCY SERVICES": "PMC",
+        "POWER & RENEWABLES": "P&R",
+        "TECHNICAL CONSULTANCY SERVICES": "TCS"
+    }
     
+    sbu_data_map = {}
     if sbu_summary:
-        sbu_df = pd.DataFrame(sbu_summary)
-        
-        # Format currency columns
-        for col in ['total_value', 'avg_po_value']:
-            if col in sbu_df.columns:
-                sbu_df[col] = sbu_df[col].fillna(0).apply(lambda x: f"${(x or 0):,.2f}")
-        
-        # Rename columns for display
-        display_columns = {
-            'name': 'SBU',
-            'manager': 'Manager',
-            'total_pos': 'Total POs',
-            'total_value': 'Total Value (USD)',
-            'active_pos': 'Active',
-            'completed_pos': 'Completed',
-            'cancelled_pos': 'Cancelled',
-            'avg_po_value': 'Avg PO Value'
-        }
-        
-        sbu_df_display = sbu_df.rename(columns=display_columns)
-        sbu_df_display['Manager'] = sbu_df_display['Manager'].fillna('Not assigned')
-        
-        # Column visibility control
-        all_columns = list(sbu_df_display.columns)
-        default_columns = ['SBU', 'Manager', 'Total POs', 'Total Value (USD)', 'Active']
-        
-        with st.expander("🔧 Column Visibility Settings", expanded=False):
-            selected_columns = st.multiselect(
-                "Select columns to display:",
-                options=all_columns,
-                default=[col for col in default_columns if col in all_columns],
-                key="sbu_summary_columns"
-            )
-        
-        # Display only selected columns
-        if selected_columns:
-            st.dataframe(
-                sbu_df_display[selected_columns],
-                width="stretch",
-                hide_index=True,
-                use_container_width=True
-            )
+        for sbu in sbu_summary:
+            full_name = sbu.get('name', '')
+            shorthand = sbu_name_mapping.get(full_name, full_name)
+            sbu_data_map[shorthand] = sbu
+    
+    target_sbus = ["ED&C", "GCM", "OSS", "PMC", "P&R", "TCS"]
+    
+    # Helper function to render compact SBU card
+    def render_compact_sbu_card(sbu_code, sbu_data_map, selected_currency, USD_TO_NGN):
+        if sbu_code in sbu_data_map:
+            sbu_data = sbu_data_map[sbu_code]
+            total_pos = sbu_data.get('total_pos', 0)
+            total_value = sbu_data.get('total_value', 0) or 0
+            
+            if selected_currency == 'NGN':
+                total_value = total_value * USD_TO_NGN
+                currency_sym = "₦"
+            else:
+                currency_sym = "$"
+            
+            st.markdown(f"""
+            <div class="metric-card" style="min-height: 100px; max-height: 110px; padding: 0.75rem 0.5rem;">
+                <div class="metric-label" style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem;">{sbu_code}</div>
+                <div class="metric-value" style="font-size: 1.4rem; margin: 0.2rem 0;">{total_pos} POs</div>
+                <div class="metric-subtitle" style="font-size: 0.75rem;">
+                    {currency_sym}{total_value:,.0f}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.warning("Please select at least one column to display.")
-        
-        # SBU Performance Charts
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # SBU Portfolio Value Chart
-            fig_value = px.bar(
-                sbu_df, 
-                x='name', 
-                y='total_value',
-                title='SBU Portfolio Value Comparison',
-                labels={'name': 'SBU', 'total_value': 'Total Value (USD)'},
-                color='total_value',
-                color_continuous_scale='Greens'
-            )
-            fig_value.update_layout(
-                xaxis_tickangle=-45,
-                height=400,
-                showlegend=False
-            )
-            st.plotly_chart(fig_value, use_container_width=True)
-        
-        with col2:
-            # SBU PO Count Chart
-            fig_count = px.bar(
-                sbu_df,
-                x='name',
-                y='total_pos',
-                title='SBU Purchase Order Count',
-                labels={'name': 'SBU', 'total_pos': 'Number of POs'},
-                color='total_pos',
-                color_continuous_scale='Blues'
-            )
-            fig_count.update_layout(
-                xaxis_tickangle=-45,
-                height=400,
-                showlegend=False
-            )
-            st.plotly_chart(fig_count, use_container_width=True)
-    else:
-        st.info("No SBU performance data available.")
+            currency_sym = "₦" if selected_currency == 'NGN' else "$"
+            st.markdown(f"""
+            <div class="metric-card" style="min-height: 100px; max-height: 110px; padding: 0.75rem 0.5rem;">
+                <div class="metric-label" style="font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem;">{sbu_code}</div>
+                <div class="metric-value" style="font-size: 1.4rem; margin: 0.2rem 0;">0 POs</div>
+                <div class="metric-subtitle" style="font-size: 0.75rem;">{currency_sym}0</div>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # SBU Cards - 3 rows x 2 columns
+    # Row 1: ED&C, GCM
+    col1, col2 = st.columns(2)
+    with col1:
+        render_compact_sbu_card(target_sbus[0], sbu_data_map, selected_currency, USD_TO_NGN)
+    with col2:
+        render_compact_sbu_card(target_sbus[1], sbu_data_map, selected_currency, USD_TO_NGN)
+    
+    # Row 2: OSS, PMC
+    col1, col2 = st.columns(2)
+    with col1:
+        render_compact_sbu_card(target_sbus[2], sbu_data_map, selected_currency, USD_TO_NGN)
+    with col2:
+        render_compact_sbu_card(target_sbus[3], sbu_data_map, selected_currency, USD_TO_NGN)
+    
+    # Row 3: P&R, TCS
+    col1, col2 = st.columns(2)
+    with col1:
+        render_compact_sbu_card(target_sbus[4], sbu_data_map, selected_currency, USD_TO_NGN)
+    with col2:
+        render_compact_sbu_card(target_sbus[5], sbu_data_map, selected_currency, USD_TO_NGN)
+    
+    # Risk Alert at the bottom
+    if expiring_pos:
+        st.markdown("<br>", unsafe_allow_html=True)  # Add spacing
+        col_alert, col_button = st.columns([5, 1])
+        with col_alert:
+            total_at_risk = sum(po['po_value'] for po in expiring_pos)
+            if selected_currency == 'NGN':
+                total_at_risk = total_at_risk * USD_TO_NGN
+            
+            st.markdown(f"""
+            <div style="background-color: #854d0e; border-left: 4px solid #facc15; padding: 1rem; border-radius: 8px;">
+                <div style="color: #fef3c7; font-weight: 600; margin-bottom: 0.25rem;">⚠️ Risk Alert</div>
+                <div style="color: #fef3c7;">
+                    <strong>{len(expiring_pos)} purchase orders</strong> worth <strong>{currency_symbol}{total_at_risk:,.2f}</strong> are expiring within 30 days!
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_button:
+            if st.button("View Details", key="view_expiring_pos", use_container_width=True):
+                st.session_state.current_page = "Analytics"
+                st.rerun()
     
     # Recent Purchase Orders
-    st.subheader("Recent Purchase Orders")
+    # st.subheader("Recent Purchase Orders")
     
-    if recent_pos:
-        po_df = pd.DataFrame(recent_pos[:15])  # Show last 15 POs
+    # if recent_pos:
+    #     po_df = pd.DataFrame(recent_pos[:15])  # Show last 15 POs
         
-        # Format the dataframe for display
-        display_df = po_df[['po_number', 'sbu_name', 'client_name', 'po_value', 
-                           'currency', 'start_date', 'expiry_date', 'status']].copy()
+    #     # Format the dataframe for display
+    #     display_df = po_df[['po_number', 'sbu_name', 'client_name', 'po_value', 
+    #                        'currency', 'start_date', 'expiry_date', 'status']].copy()
         
-        # Format currency
-        display_df['formatted_value'] = display_df.apply(
-            lambda row: f"{row['currency']} {row['po_value']:,.2f}", axis=1
-        )
+    #     # Format currency
+    #     display_df['formatted_value'] = display_df.apply(
+    #         lambda row: f"{row['currency']} {row['po_value']:,.2f}", axis=1
+    #     )
         
-        # Select and rename columns
-        final_df = display_df[['po_number', 'sbu_name', 'client_name', 'formatted_value', 
-                              'start_date', 'expiry_date', 'status']].copy()
-        final_df.columns = ['PO Number', 'SBU', 'Client', 'Value', 'Start Date', 'Expiry Date', 'Status']
+    #     # Select and rename columns
+    #     final_df = display_df[['po_number', 'sbu_name', 'client_name', 'formatted_value', 
+    #                           'start_date', 'expiry_date', 'status']].copy()
+    #     final_df.columns = ['PO Number', 'SBU', 'Client', 'Value', 'Start Date', 'Expiry Date', 'Status']
         
-        # Column visibility control
-        all_po_columns = list(final_df.columns)
-        default_po_columns = ['PO Number', 'Client', 'Value', 'Start Date', 'Status']
+    #     # Column visibility control
+    #     all_po_columns = list(final_df.columns)
+    #     default_po_columns = ['PO Number', 'Client', 'Value', 'Start Date', 'Status']
         
-        with st.expander("🔧 Column Visibility Settings", expanded=False):
-            selected_po_columns = st.multiselect(
-                "Select columns to display:",
-                options=all_po_columns,
-                default=[col for col in default_po_columns if col in all_po_columns],
-                key="recent_pos_columns"
-            )
+    #     with st.expander("🔧 Column Visibility Settings", expanded=False):
+    #         selected_po_columns = st.multiselect(
+    #             "Select columns to display:",
+    #             options=all_po_columns,
+    #             default=[col for col in default_po_columns if col in all_po_columns],
+    #             key="recent_pos_columns"
+    #         )
         
-        # Display only selected columns
-        if selected_po_columns:
-            st.dataframe(
-                final_df[selected_po_columns],
-                width="stretch",
-                hide_index=True,
-                use_container_width=True
-            )
-        else:
-            st.warning("Please select at least one column to display.")
-    else:
-        st.info("No recent purchase orders available.")
-    
-    # Analytics Charts
-    analytics_data = db_manager.get_analytics_data()
-    
-    if analytics_data.get('monthly_trends'):
-        st.subheader("Monthly Trends")
-        
-        trends_df = pd.DataFrame(analytics_data['monthly_trends'])
-        trends_df['month'] = pd.to_datetime(trends_df['month'])
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig_po_trend = px.line(
-                trends_df,
-                x='month',
-                y='pos_count',
-                title='Monthly PO Count Trend',
-                labels={'month': 'Month', 'pos_count': 'Number of POs'}
-            )
-            fig_po_trend.update_traces(line_color='#1e8449', line_width=3)
-            st.plotly_chart(fig_po_trend, use_container_width=True)
-        
-        with col2:
-            fig_value_trend = px.line(
-                trends_df,
-                x='month',
-                y='total_value',
-                title='Monthly Portfolio Value Trend',
-                labels={'month': 'Month', 'total_value': 'Total Value (USD)'}
-            )
-            fig_value_trend.update_traces(line_color='#27ae60', line_width=3)
-            st.plotly_chart(fig_value_trend, use_container_width=True)
+    #     # Display only selected columns
+    #     if selected_po_columns:
+    #         st.dataframe(
+    #             final_df[selected_po_columns],
+    #             width="stretch",
+    #             hide_index=True,
+    #             use_container_width=True
+    #         )
+    #     else:
+    #         st.warning("Please select at least one column to display.")
+    # else:
+    #     st.info("No recent purchase orders available.")
 
 
 def data_entry_page():
-    """Data entry page for clients and POs"""
-    st.title("Data Entry")
+    """Data entry page for NEW POs only"""
+    st.title("Data Entry - Purchase Orders")
     
     db_manager = st.session_state.db_manager
     
-    # Create tabs for different entry types
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["SBU Entry", "SBU Management", "Client Entry", "Client Management", "Purchase Order Entry", "PO Management"])
+    # Create tabs for PO entry types only (SBU and Client management removed)
+    tab1, tab2 = st.tabs(["Purchase Order Entry", "PO Management"])
     
     with tab1:
-        st.subheader("Add New Strategic Business Unit")
-        
-        with st.form("sbu_form"):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                sbu_name = st.text_input("SBU Name *", placeholder="e.g., Engineering")
-                manager_name = st.text_input("Manager Name", placeholder="e.g., Ola Rotimi")
-                # department = st.selectbox("Department", [
-                    # "Upstream Engineering",
-                    # "Midstream Engineering", 
-                    # "Downstream Engineering",
-                    # "Digital Solutions",
-                    # "Environmental Engineering",
-                    # "Project Management",
-                    # "Other"
-                # ])
-            
-            with col2:
-                location = st.text_input("Location", placeholder="e.g., Lagos, NG")
-                budget = st.number_input("Annual Budget (USD)", min_value=0.0, value=0.0, step=1000.0, format="%.2f")
-                if budget > 0:
-                    st.caption(f"💰 Formatted: {format_currency(budget, 'USD')}")
-                description = st.text_area("Description", placeholder="Brief description of SBU activities...")
-            
-            submitted = st.form_submit_button("Add SBU", type="primary")
-            
-            if submitted:
-                if not sbu_name.strip():
-                    st.error("SBU name is required!")
-                else:
-                    try:
-                        # Check if SBU already exists
-                        existing_sbus = db_manager.get_sbus()
-                        existing_names = [sbu['name'].lower() for sbu in existing_sbus]
-                        
-                        if sbu_name.strip().lower() in existing_names:
-                            st.warning(f"SBU '{sbu_name}' already exists in the database.")
-                        else:
-                            sbu_id = db_manager.add_sbu(
-                                name=sbu_name.strip(),
-                                manager=manager_name.strip() if manager_name.strip() else "TBD",
-                                # department=department,
-                                location=location.strip(),
-                                budget=budget,
-                                description=description.strip()
-                            )
-                            st.success(f"SBU '{sbu_name}' added successfully!")
-                            st.rerun()
-                    except Exception as e:
-                        if "UNIQUE constraint" in str(e):
-                            st.warning(f"SBU '{sbu_name}' already exists in the database.")
-                        else:
-                            st.error(f"Error adding SBU: {e}")
-    
-    with tab3:
-        st.subheader("Add New Client Company")
-        
-        with st.form("client_form"):
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                company_name = st.text_input("Company Name *", placeholder="Enter client company name")
-                industry_sector = st.selectbox(
-                    "Industry Sector",
-                    ["", "Oil & Gas Upstream", "Oil & Gas Midstream", "Oil & Gas Downstream",
-                     "Petrochemicals", "Renewable Energy", "Mining", "Power Generation",
-                     "Manufacturing", "Other"]
-                )
-                contact_person = st.text_input("Contact Person", placeholder="Primary contact name")
-                email = st.text_input("Email", placeholder="contact@company.com")
-            
-            with col2:
-                phone = st.text_input("Phone", placeholder="+1-234-567-8900")
-                address = st.text_area("Address", placeholder="Company address")
-                country = st.selectbox(
-                    "Country",
-                    ["", "United States", "Canada", "United Kingdom", "Norway", "Netherlands",
-                     "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", "Brazil", 
-                     "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
-                     "Russia", "Other"]
-                )
-            
-            submitted = st.form_submit_button("Add Client", type="primary")
-            
-            if submitted:
-                if not company_name.strip():
-                    st.error("Company name is required!")
-                else:
-                    try:
-                        # Check if client already exists
-                        existing_clients = db_manager.get_clients()
-                        existing_names = [client['name'].lower() for client in existing_clients]
-                        
-                        if company_name.strip().lower() in existing_names:
-                            st.warning(f"Client '{company_name}' already exists in the database.")
-                        else:
-                            client_id = db_manager.add_client(
-                                name=company_name.strip(),
-                                industry_sector=industry_sector,
-                                contact_person=contact_person.strip(),
-                                email=email.strip(),
-                                phone=phone.strip(),
-                                address=address.strip(),
-                                country=country
-                            )
-                            st.success(f"Client '{company_name}' added successfully!")
-                            st.rerun()
-                    except Exception as e:
-                        if "UNIQUE constraint" in str(e):
-                            st.warning(f"Client '{company_name}' already exists in the database.")
-                        else:
-                            st.error(f"Error adding client: {e}")
-    
-    with tab2:
-        st.subheader("Manage Existing SBUs")
-        
-        # Get existing SBUs
-        existing_sbus = db_manager.get_sbus()
-        
-        if not existing_sbus:
-            st.info("No SBUs found. Add an SBU using the 'SBU Entry' tab.")
-        else:
-            st.write("**Select an SBU to edit or remove:**")
-            
-            # Create columns for the SBU list
-            for i, sbu in enumerate(existing_sbus):
-                with st.expander(f"SBU: {sbu['name']} (Manager: {sbu['manager']})"):
-                    col1, col2 = st.columns([3, 1])
-                    
-                    with col1:
-                        # Editable form for this SBU
-                        with st.form(f"edit_sbu_{sbu['id']}"):
-                            edit_name = st.text_input("SBU Name", value=sbu['name'], key=f"edit_name_{sbu['id']}")
-                            edit_manager = st.text_input("Manager", value=sbu['manager'], key=f"edit_manager_{sbu['id']}")
-                            edit_location = st.text_input("Location", value=sbu.get('location', ''), key=f"edit_location_{sbu['id']}")
-                            edit_budget = st.number_input("Annual Budget (USD)", min_value=0.0, value=float(sbu.get('budget', 0.0)), step=1000.0, format="%.2f", key=f"edit_budget_{sbu['id']}")
-                            edit_description = st.text_area("Description", value=sbu.get('description', ''), key=f"edit_desc_{sbu['id']}")
-                            
-                            col_save, col_cancel = st.columns(2)
-                            with col_save:
-                                if st.form_submit_button("Save Changes", type="primary"):
-                                    try:
-                                        # Update SBU
-                                        import sqlite3
-                                        with sqlite3.connect(db_manager.db_path) as conn:
-                                            cursor = conn.cursor()
-                                            cursor.execute("""
-                                                UPDATE sbu SET name = ?, manager = ?, location = ?, budget = ?, description = ?
-                                                WHERE id = ?
-                                            """, (edit_name, edit_manager, edit_location, edit_budget, edit_description, sbu['id']))
-                                            conn.commit()
-                                        
-                                        st.success(f"SBU '{edit_name}' updated successfully!")
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"Error updating SBU: {e}")
-                    
-                    with col2:
-                        st.write("**Danger Zone**")
-                        if st.button(f"Delete SBU", key=f"delete_{sbu['id']}", type="secondary"):
-                            # Check if SBU has associated POs
-                            pos = db_manager.get_purchase_orders()
-                            has_pos = any(po['sbu_id'] == sbu['id'] for po in pos)
-                            
-                            if has_pos:
-                                st.error("Cannot delete SBU: It has associated Purchase Orders. Delete those first.")
-                            else:
-                                try:
-                                    import sqlite3
-                                    with sqlite3.connect(db_manager.db_path) as conn:
-                                        cursor = conn.cursor()
-                                        cursor.execute("DELETE FROM sbu WHERE id = ?", (sbu['id'],))
-                                        conn.commit()
-                                    
-                                    st.success(f"SBU '{sbu['name']}' deleted successfully!")
-                                    st.rerun()
-                                except Exception as e:
-                                    st.error(f"Error deleting SBU: {e}")
-    
-    with tab5:
         st.subheader("Add New Purchase Order")
         
         # Get data for dropdowns
@@ -961,10 +790,16 @@ def data_entry_page():
                      "EPC (Engineering, Procurement, Construction)",
                      "EPCM (Engineering, Procurement, Construction Management)",
                      "Engineering Services Only", "Consulting Services",
-                     "Maintenance Contract", "Other"]
+                     "Maintenance Contract", "Equipment Supply", "Material Supply", "Other"]
                 )
                 
-                payment_terms = st.text_input("Payment Terms", placeholder="e.g., Net 30, 50% upfront")
+                risk_factor = st.selectbox(
+                    "Risk Factor *",
+                    [1, 2, 3, 4, 5],
+                    index=2,
+                    help="1 = Low Risk, 5 = High Risk"
+                )
+                st.caption("Risk Level: " + ["Low Risk", "Low-Medium Risk", "Medium Risk", "Medium-High Risk", "High Risk"][risk_factor - 1])
             
             submitted = st.form_submit_button("Save Purchase Order", type="primary")
             
@@ -995,105 +830,15 @@ def data_entry_page():
                             project_name=project_name.strip(),
                             project_description=project_description.strip(),
                             contract_type=contract_type,
-                            payment_terms=payment_terms.strip()
+                            payment_terms="",
+                            risk_factor=risk_factor
                         )
                         st.success(f"Purchase Order '{po_number}' saved successfully!")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Error saving purchase order: {e}")
     
-    with tab4:
-        st.subheader("Manage Existing Clients")
-        
-        # Get existing clients
-        existing_clients = db_manager.get_clients()
-        
-        if not existing_clients:
-            st.info("No clients found. Add a client using the 'Client Entry' tab.")
-        else:
-            st.write("**Select a client to edit or remove:**")
-            
-            # Create expandable sections for each client
-            for i, client in enumerate(existing_clients):
-                with st.expander(f"Client: {client['name']} ({client.get('industry_sector', 'N/A')})"):
-                    col1, col2 = st.columns([3, 1])
-                    
-                    with col1:
-                        # Editable form for this client
-                        with st.form(f"edit_client_{client['id']}"):
-                            edit_name = st.text_input("Company Name", value=client['name'], key=f"edit_client_name_{client['id']}")
-                            
-                            col_a, col_b = st.columns(2)
-                            with col_a:
-                                edit_industry = st.selectbox(
-                                    "Industry Sector",
-                                    ["", "Oil & Gas Upstream", "Oil & Gas Midstream", "Oil & Gas Downstream",
-                                     "Petrochemicals", "Renewable Energy", "Mining", "Power Generation",
-                                     "Manufacturing", "Other"],
-                                    index=["", "Oil & Gas Upstream", "Oil & Gas Midstream", "Oil & Gas Downstream",
-                                           "Petrochemicals", "Renewable Energy", "Mining", "Power Generation",
-                                           "Manufacturing", "Other"].index(client.get('industry_sector', '')) 
-                                           if client.get('industry_sector', '') in ["", "Oil & Gas Upstream", "Oil & Gas Midstream", 
-                                           "Oil & Gas Downstream", "Petrochemicals", "Renewable Energy", "Mining", 
-                                           "Power Generation", "Manufacturing", "Other"] else 0,
-                                    key=f"edit_client_industry_{client['id']}"
-                                )
-                                edit_contact = st.text_input("Contact Person", value=client.get('contact_person', ''), key=f"edit_client_contact_{client['id']}")
-                                edit_email = st.text_input("Email", value=client.get('email', ''), key=f"edit_client_email_{client['id']}")
-                            
-                            with col_b:
-                                edit_phone = st.text_input("Phone", value=client.get('phone', ''), key=f"edit_client_phone_{client['id']}")
-                                edit_address = st.text_area("Address", value=client.get('address', ''), key=f"edit_client_address_{client['id']}")
-                                edit_country = st.selectbox(
-                                    "Country",
-                                    ["", "United States", "Canada", "United Kingdom", "Norway", "Netherlands",
-                                     "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", "Brazil", 
-                                     "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
-                                     "Russia", "Other"],
-                                    index=["", "United States", "Canada", "United Kingdom", "Norway", "Netherlands",
-                                           "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", "Brazil", 
-                                           "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
-                                           "Russia", "Other"].index(client.get('country', ''))
-                                           if client.get('country', '') in ["", "United States", "Canada", "United Kingdom", 
-                                           "Norway", "Netherlands", "Saudi Arabia", "UAE", "Qatar", "Kuwait", "Nigeria", 
-                                           "Brazil", "Mexico", "Australia", "Indonesia", "Malaysia", "China", "India", 
-                                           "Russia", "Other"] else 0,
-                                    key=f"edit_client_country_{client['id']}"
-                                )
-                            
-                            col_save, col_cancel = st.columns(2)
-                            with col_save:
-                                if st.form_submit_button("Save Changes", type="primary"):
-                                    try:
-                                        # Update client
-                                        db_manager.update_client(
-                                            client_id=client['id'],
-                                            name=edit_name,
-                                            industry_sector=edit_industry,
-                                            contact_person=edit_contact,
-                                            email=edit_email,
-                                            phone=edit_phone,
-                                            address=edit_address,
-                                            country=edit_country
-                                        )
-                                        st.success(f"Client '{edit_name}' updated successfully!")
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"Error updating client: {e}")
-                    
-                    with col2:
-                        st.write("**Danger Zone**")
-                        if st.button(f"Delete Client", key=f"delete_client_{client['id']}", type="secondary"):
-                            try:
-                                db_manager.delete_client(client['id'])
-                                st.success(f"Client '{client['name']}' deleted successfully!")
-                                st.rerun()
-                            except ValueError as ve:
-                                st.error(str(ve))
-                            except Exception as e:
-                                st.error(f"Error deleting client: {e}")
-    
-    with tab6:
+    with tab2:
         st.subheader("Manage Existing Purchase Orders")
         
         # Get existing purchase orders
@@ -1187,11 +932,20 @@ def data_entry_page():
                                                 "EPC (Engineering, Procurement, Construction)",
                                                 "EPCM (Engineering, Procurement, Construction Management)",
                                                 "Engineering Services Only", "Consulting Services",
-                                                "Maintenance Contract", "Other"]
+                                                "Maintenance Contract", "Equipment Supply", "Material Supply", "Other"]
                                 contract_idx = contract_types.index(po.get('contract_type', '')) if po.get('contract_type', '') in contract_types else 0
                                 edit_contract_type = st.selectbox("Contract Type", contract_types, index=contract_idx, key=f"edit_po_contract_{po['id']}")
                                 
-                                edit_payment_terms = st.text_input("Payment Terms", value=po.get('payment_terms', ''), key=f"edit_po_payment_{po['id']}")
+                                # Get current risk factor, default to 3 if not set
+                                current_risk = po.get('risk_factor', 3) or 3
+                                edit_risk_factor = st.selectbox(
+                                    "Risk Factor",
+                                    [1, 2, 3, 4, 5],
+                                    index=current_risk - 1,
+                                    help="1 = Low Risk, 5 = High Risk",
+                                    key=f"edit_po_risk_{po['id']}"
+                                )
+                                st.caption("Risk Level: " + ["Low Risk", "Low-Medium Risk", "Medium Risk", "Medium-High Risk", "High Risk"][edit_risk_factor - 1])
                             
                             col_save, col_cancel = st.columns(2)
                             with col_save:
@@ -1224,7 +978,8 @@ def data_entry_page():
                                                 project_name=edit_project_name.strip(),
                                                 project_description=edit_project_desc.strip(),
                                                 contract_type=edit_contract_type,
-                                                payment_terms=edit_payment_terms.strip()
+                                                payment_terms="",
+                                                risk_factor=edit_risk_factor
                                             )
                                             st.success(f"Purchase Order '{edit_po_number}' updated successfully!")
                                             st.rerun()
@@ -1248,9 +1003,198 @@ def analytics_page():
     
     db_manager = st.session_state.db_manager
     analytics_data = db_manager.get_analytics_data()
+    sbu_summary = db_manager.get_sbu_summary()
     
-    # Risk Analysis
-    st.subheader("Risk Analysis")
+    # SBU Data Visuals (moved from Dashboard)
+    st.subheader("SBU Performance Visuals")
+    
+    if sbu_summary:
+        sbu_df = pd.DataFrame(sbu_summary)
+        
+        # SBU Performance Charts
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # SBU Portfolio Value Chart
+            fig_value = px.bar(
+                sbu_df, 
+                x='name', 
+                y='total_value',
+                title='SBU Portfolio Value Comparison',
+                labels={'name': 'SBU', 'total_value': 'Total Value (USD)'},
+                color='total_value',
+                color_continuous_scale='Greens'
+            )
+            fig_value.update_layout(
+                xaxis_tickangle=-45,
+                height=400,
+                showlegend=False
+            )
+            st.plotly_chart(fig_value, use_container_width=True)
+        
+        with col2:
+            # SBU PO Count Chart
+            fig_count = px.bar(
+                sbu_df,
+                x='name',
+                y='total_pos',
+                title='SBU Purchase Order Count',
+                labels={'name': 'SBU', 'total_pos': 'Number of POs'},
+                color='total_pos',
+                color_continuous_scale='Blues'
+            )
+            fig_count.update_layout(
+                xaxis_tickangle=-45,
+                height=400,
+                showlegend=False
+            )
+            st.plotly_chart(fig_count, use_container_width=True)
+        
+        # Monthly Trends
+        if analytics_data.get('monthly_trends'):
+            st.subheader("Monthly Trends")
+            
+            trends_df = pd.DataFrame(analytics_data['monthly_trends'])
+            trends_df['month'] = pd.to_datetime(trends_df['month'])
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                fig_po_trend = px.line(
+                    trends_df,
+                    x='month',
+                    y='pos_count',
+                    title='Monthly PO Count Trend',
+                    labels={'month': 'Month', 'pos_count': 'Number of POs'}
+                )
+                fig_po_trend.update_traces(line_color='#1e8449', line_width=3)
+                st.plotly_chart(fig_po_trend, use_container_width=True)
+            
+            with col2:
+                fig_value_trend = px.line(
+                    trends_df,
+                    x='month',
+                    y='total_value',
+                    title='Monthly Portfolio Value Trend',
+                    labels={'month': 'Month', 'total_value': 'Total Value (USD)'}
+                )
+                fig_value_trend.update_traces(line_color='#27ae60', line_width=3)
+                st.plotly_chart(fig_value_trend, use_container_width=True)
+    else:
+        st.info("No SBU performance data available.")
+    
+    # Risk Factor Analysis
+    st.subheader("Risk Factor Analysis")
+    
+    # Get all POs with risk factor
+    all_pos = db_manager.get_purchase_orders()
+    
+    if all_pos:
+        pos_df = pd.DataFrame(all_pos)
+        
+        # Ensure risk_factor exists, default to 3 if missing
+        if 'risk_factor' not in pos_df.columns:
+            pos_df['risk_factor'] = 3
+        else:
+            pos_df['risk_factor'] = pos_df['risk_factor'].fillna(3).astype(int)
+        
+        # Calculate risk statistics
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            high_risk_count = len(pos_df[pos_df['risk_factor'] >= 4])
+            render_metric_card(
+                "High Risk POs",
+                str(high_risk_count),
+                "Risk Factor 4-5"
+            )
+        
+        with col2:
+            medium_risk_count = len(pos_df[pos_df['risk_factor'] == 3])
+            render_metric_card(
+                "Medium Risk POs",
+                str(medium_risk_count),
+                "Risk Factor 3"
+            )
+        
+        with col3:
+            low_risk_count = len(pos_df[pos_df['risk_factor'] <= 2])
+            render_metric_card(
+                "Low Risk POs",
+                str(low_risk_count),
+                "Risk Factor 1-2"
+            )
+        
+        # Risk Factor Distribution Charts
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Risk Factor Distribution by Count
+            risk_dist = pos_df.groupby('risk_factor').size().reset_index(name='count')
+            risk_dist['risk_label'] = risk_dist['risk_factor'].map({
+                1: "1 - Low Risk",
+                2: "2 - Low-Medium",
+                3: "3 - Medium",
+                4: "4 - Medium-High",
+                5: "5 - High Risk"
+            })
+            
+            fig_risk_count = px.bar(
+                risk_dist,
+                x='risk_label',
+                y='count',
+                title='PO Count by Risk Factor',
+                labels={'risk_label': 'Risk Level', 'count': 'Number of POs'},
+                color='risk_factor',
+                color_continuous_scale='RdYlGn_r'
+            )
+            fig_risk_count.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig_risk_count, use_container_width=True)
+        
+        with col2:
+            # Risk Factor Distribution by Value
+            risk_value = pos_df.groupby('risk_factor')['po_value'].sum().reset_index()
+            risk_value['risk_label'] = risk_value['risk_factor'].map({
+                1: "1 - Low Risk",
+                2: "2 - Low-Medium",
+                3: "3 - Medium",
+                4: "4 - Medium-High",
+                5: "5 - High Risk"
+            })
+            
+            fig_risk_value = px.bar(
+                risk_value,
+                x='risk_label',
+                y='po_value',
+                title='Portfolio Value by Risk Factor',
+                labels={'risk_label': 'Risk Level', 'po_value': 'Total Value (USD)'},
+                color='risk_factor',
+                color_continuous_scale='RdYlGn_r'
+            )
+            fig_risk_value.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig_risk_value, use_container_width=True)
+        
+        # Risk Factor by SBU
+        st.subheader("Risk Distribution by SBU")
+        risk_by_sbu = pos_df.groupby(['sbu_name', 'risk_factor']).size().reset_index(name='count')
+        
+        fig_risk_sbu = px.bar(
+            risk_by_sbu,
+            x='sbu_name',
+            y='count',
+            color='risk_factor',
+            title='Risk Factor Distribution across SBUs',
+            labels={'sbu_name': 'SBU', 'count': 'Number of POs', 'risk_factor': 'Risk Factor'},
+            color_continuous_scale='RdYlGn_r',
+            barmode='stack'
+        )
+        fig_risk_sbu.update_layout(height=400, xaxis_tickangle=-45)
+        st.plotly_chart(fig_risk_sbu, use_container_width=True)
+    else:
+        st.info("No purchase order data available for risk analysis.")
+    
+    # Expiry Risk Analysis
+    st.subheader("Expiry Risk Analysis")
     
     days_ahead = st.selectbox("Analyze POs expiring within:", [7, 14, 30, 60, 90], index=2)
     expiring_pos = db_manager.get_expiring_pos(days_ahead)
@@ -1406,7 +1350,7 @@ def reports_page():
     # Data Export Section
     st.subheader("Data Export")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         if st.button("Export to Excel", width="stretch"):
@@ -1435,7 +1379,7 @@ def reports_page():
                 st.download_button(
                     label="Download Excel File",
                     data=excel_data,
-                    file_name=f"sbu_po_export_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                    file_name=f"po_export_{datetime.now().strftime('%Y%m%d')}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
                 
@@ -1443,23 +1387,6 @@ def reports_page():
                 st.error(f"Export failed: {e}")
     
     with col2:
-        if st.button("Export to CSV", width="stretch"):
-            try:
-                po_df = db_manager.export_to_dataframe('purchase_orders_detailed')
-                
-                csv_data = po_df.to_csv(index=False)
-                
-                st.download_button(
-                    label="Download CSV File",
-                    data=csv_data,
-                    file_name=f"sbu_po_export_{datetime.now().strftime('%Y%m%d')}.csv",
-                    mime="text/csv"
-                )
-                
-            except Exception as e:
-                st.error(f"Export failed: {e}")
-    
-    with col3:
         if st.button("Generate Summary Report", width="stretch"):
             try:
                 # Generate HTML report content
@@ -1469,9 +1396,9 @@ def reports_page():
                 
                 report_html = f"""
                 <html>
-                <head><title>SBU/PO Dashboard Report</title></head>
+                <head><title>PO Dashboard Report</title></head>
                 <body>
-                <h1>SBU/PO Dashboard Report</h1>
+                <h1>PO Dashboard Report</h1>
                 <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
                 
                 <h2>Executive Summary</h2>
@@ -1492,7 +1419,7 @@ def reports_page():
                 st.download_button(
                     label="Download HTML Report",
                     data=report_html,
-                    file_name=f"sbu_po_report_{datetime.now().strftime('%Y%m%d')}.html",
+                    file_name=f"po_report_{datetime.now().strftime('%Y%m%d')}.html",
                     mime="text/html"
                 )
                 
@@ -1616,7 +1543,7 @@ def main():
         """, unsafe_allow_html=True)
     else:
         # Show sidebar navigation for all other pages
-        st.sidebar.title("Navigation")
+        st.sidebar.title("")
         
         # Navigation buttons in sidebar single column
         if st.sidebar.button("Home", width="stretch", type="primary" if st.session_state.current_page == "Home" else "secondary"):
@@ -1664,15 +1591,8 @@ def main():
     # Add some sidebar info
     st.sidebar.markdown("---")
     st.sidebar.info("""
-    **SBU/PO Dashboard v2.0**
+    **PO Dashboard v2.0**
     
-    Built with Streamlit for better usability and responsive design.
-    
-    **Features:**
-    - Real-time data visualization
-    - Interactive charts and tables  
-    - Professional reporting
-    - Data export capabilities
     """)
     
     # Display selected page

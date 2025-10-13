@@ -1,0 +1,348 @@
+[2025-10-12 12:32:30] ================================================================================
+[2025-10-12 12:32:30] SBU PURCHASE ORDER DATA MIGRATION
+[2025-10-12 12:32:30] ================================================================================
+[2025-10-12 12:32:30] Started at: 2025-10-12 12:32:30
+[2025-10-12 12:32:31] ✓ Database backed up to: backup_before_migration_20251012_123231.db
+[2025-10-12 12:32:31] 
+================================================================================
+[2025-10-12 12:32:31] STEP 1: Loading SBU Register
+[2025-10-12 12:32:31] ================================================================================
+[2025-10-12 12:32:31] Found 6 SBUs in register
+[2025-10-12 12:32:31]   ⚠ SBU already exists: TECHNICAL CONSULTANCY SERVICES (ID: 14)
+[2025-10-12 12:32:31]   ⚠ SBU already exists: POWER & RENEWABLES (ID: 15)
+[2025-10-12 12:32:32]   ⚠ SBU already exists: ENGINEERING, DESIGN AND CONSTRUCTION (ID: 16)
+[2025-10-12 12:32:32]   ⚠ SBU already exists: PROJECT MANAGEMENT CONSULTANCY SERVICES (ID: 17)
+[2025-10-12 12:32:32]   ⚠ SBU already exists: GLOBAL COMMERCIAL MANAGEMENT (ID: 18)
+[2025-10-12 12:32:32]   ⚠ SBU already exists: OILFIELD SUPPLY AND SERVICES (ID: 19)
+[2025-10-12 12:32:32] 
+✓ Successfully loaded 0 new SBUs
+[2025-10-12 12:32:32] Total SBUs in mapping: 12
+[2025-10-12 12:32:32] 
+================================================================================
+[2025-10-12 12:32:33] STEP 2: Loading and Cleaning PO Data Files
+[2025-10-12 12:32:33] ================================================================================
+[2025-10-12 12:32:33] 
+  Reading file: 2025 Purchase orders - ED&C.xlsx
+[2025-10-12 12:32:44]   Found 135 records in 2025 Purchase orders - ED&C.xlsx
+[2025-10-12 12:32:44]   Removed 13 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:32:44]   Removed 39 rows with invalid or zero USD values
+[2025-10-12 12:32:44]   ✓ Cleaned 83 valid records from ED&C
+[2025-10-12 12:32:45] 
+  Reading file: 2025 Purchase orders - GCM.xlsx
+[2025-10-12 12:32:45]   Found 137 records in 2025 Purchase orders - GCM.xlsx
+[2025-10-12 12:32:45]   Removed 74 rows with invalid or zero USD values
+[2025-10-12 12:32:45]   ✓ Cleaned 63 valid records from GCM
+[2025-10-12 12:32:46] 
+  Reading file: 2025 Purchase orders - PMC.xlsx
+[2025-10-12 12:32:46]   Found 6 records in 2025 Purchase orders - PMC.xlsx
+[2025-10-12 12:32:46]   Removed 6 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:32:46]   ✓ Cleaned 0 valid records from PMC
+[2025-10-12 12:32:46] 
+  Reading file: 2025 Purchase orders - TSS.xlsx
+[2025-10-12 12:32:47]   Found 28 records in 2025 Purchase orders - TSS.xlsx
+[2025-10-12 12:32:47]   Removed 2 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:32:47]   ✓ Cleaned 26 valid records from TCS
+[2025-10-12 12:32:47] 
+  Reading file: 2025 Purchase orders OSS.xlsx
+[2025-10-12 12:32:48]   Found 42 records in 2025 Purchase orders OSS.xlsx
+[2025-10-12 12:32:48]   Removed 1 rows with missing PO NUMBER or CLIENT
+[2025-10-12 12:32:48]   Removed 1 rows with invalid or zero USD values
+[2025-10-12 12:32:48]   ✓ Cleaned 40 valid records from OSS
+[2025-10-12 12:32:48] 
+✓ Total records loaded: 212
+[2025-10-12 12:32:48]   Unique PO Numbers: 164
+[2025-10-12 12:32:48]   Unique Clients: 47
+[2025-10-12 12:32:48]   SBUs represented: 4
+[2025-10-12 12:32:48] 
+================================================================================
+[2025-10-12 12:32:48] STEP 3: Migrating Client Companies
+[2025-10-12 12:32:48] ================================================================================
+[2025-10-12 12:32:48] Found 47 unique clients
+[2025-10-12 12:32:48]   ⚠ Client already exists: ACCU GAS - SAVANNAH ENERGY (ID: 4)
+[2025-10-12 12:32:48]   ⚠ Client already exists: DAEWOO (ID: 5)
+[2025-10-12 12:32:49]   ⚠ Client already exists: NLNG (ID: 6)
+[2025-10-12 12:32:49]   ⚠ Client already exists: TOTAL ENERGIES (ID: 7)
+[2025-10-12 12:32:49]   ⚠ Client already exists: NEPN (ID: 8)
+[2025-10-12 12:32:49]   ⚠ Client already exists: SEPLAT (ID: 9)
+[2025-10-12 12:32:49]   ⚠ Client already exists: SNEPCO (ID: 10)
+[2025-10-12 12:32:49]   ⚠ Client already exists: JOCAM (ID: 11)
+[2025-10-12 12:32:49]   ⚠ Client already exists: RADIAL CIRCLE (ID: 12)
+[2025-10-12 12:32:49]   ⚠ Client already exists: SCHNEIDER (ID: 13)
+[2025-10-12 12:32:49]   ⚠ Client already exists: MANTRAC (ID: 14)
+[2025-10-12 12:32:49]   ⚠ Client already exists: ZUPT (ID: 15)
+[2025-10-12 12:32:49]   ⚠ Client already exists: SEPNU (ID: 16)
+[2025-10-12 12:32:49]   ⚠ Client already exists: FAWEL & LIQUID ENERGY (ID: 17)
+[2025-10-12 12:32:50]   ⚠ Client already exists: RAEC (ID: 18)
+[2025-10-12 12:32:50]   ⚠ Client already exists: SHELL (ID: 19)
+[2025-10-12 12:32:50]   ⚠ Client already exists: RENAISSANCE (ID: 20)
+[2025-10-12 12:32:50]   ⚠ Client already exists: STATMARINE (ID: 21)
+[2025-10-12 12:32:50]   ⚠ Client already exists: BH (ID: 22)
+[2025-10-12 12:32:50]   ⚠ Client already exists: ANTAN (ID: 23)
+[2025-10-12 12:32:50]   ⚠ Client already exists: SPDC (ID: 24)
+[2025-10-12 12:32:50]   ⚠ Client already exists: TOTALENERGIES (ID: 25)
+[2025-10-12 12:32:50]   ⚠ Client already exists: EXXONMOBIL(ESSO EPNL) (ID: 26)
+[2025-10-12 12:32:50]   ⚠ Client already exists: OANDO PLC (ID: 27)
+[2025-10-12 12:32:50]   ⚠ Client already exists: NIGERIA LNG (ID: 28)
+[2025-10-12 12:32:50]   ⚠ Client already exists: ORIENTAL (ID: 29)
+[2025-10-12 12:32:50]   ⚠ Client already exists: SCHLUMBERGER (ID: 30)
+[2025-10-12 12:32:50]   ⚠ Client already exists: CAMERON (ID: 31)
+[2025-10-12 12:32:50]   ⚠ Client already exists: BBCL (ID: 32)
+[2025-10-12 12:32:50]   ⚠ Client already exists: FSCO (ID: 33)
+[2025-10-12 12:32:50]   ⚠ Client already exists: WALKIN CUSTOMER (ID: 34)
+[2025-10-12 12:32:51]   ⚠ Client already exists: BENABIG (ID: 35)
+[2025-10-12 12:32:51]   ⚠ Client already exists: WAPCO (ID: 36)
+[2025-10-12 12:32:51]   ⚠ Client already exists: STUZANS ENERGY LIMITED (ID: 37)
+[2025-10-12 12:32:51]   ⚠ Client already exists: TAG ENERGY (ID: 38)
+[2025-10-12 12:32:51]   ⚠ Client already exists: EXXON MOBIL (ID: 39)
+[2025-10-12 12:32:51]   ⚠ Client already exists: SAIPEM (ID: 40)
+[2025-10-12 12:32:51]   ⚠ Client already exists: PACE (ID: 41)
+[2025-10-12 12:32:51]   ⚠ Client already exists: CHEVRON (ID: 42)
+[2025-10-12 12:32:51]   ⚠ Client already exists: TFMC (ID: 43)
+[2025-10-12 12:32:51]   ⚠ Client already exists: JULINAT (ID: 44)
+[2025-10-12 12:32:51]   ⚠ Client already exists: HILLKING (ID: 45)
+[2025-10-12 12:32:51]   ⚠ Client already exists: COTEC (ID: 46)
+[2025-10-12 12:32:51]   ⚠ Client already exists: BENABIGAIL (ID: 47)
+[2025-10-12 12:32:51]   ⚠ Client already exists: VANJES & ELIAT LIMITED (ID: 48)
+[2025-10-12 12:32:51]   ⚠ Client already exists: UNIVERSAL AUTOMATION NIGERIA LIMITED (ID: 49)
+[2025-10-12 12:32:51] 
+✓ Successfully migrated 0 new clients
+[2025-10-12 12:32:51] Total clients in mapping: 46
+[2025-10-12 12:32:51] 
+================================================================================
+[2025-10-12 12:32:51] STEP 4: Migrating Purchase Orders
+[2025-10-12 12:32:51] ================================================================================
+[2025-10-12 12:32:51]   ⚠ PO already exists: 4500002508
+[2025-10-12 12:32:51]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:32:51]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:32:51]   ⚠ PO already exists: 4400010271
+[2025-10-12 12:32:51]   ⚠ PO already exists: 4560190915, 4560190916
+[2025-10-12 12:32:51]   ⚠ PO already exists: 901
+[2025-10-12 12:32:51]   ⚠ PO already exists: PM/IESL/PO/25/010
+[2025-10-12 12:32:51]   ⚠ PO already exists: 4510523313
+[2025-10-12 12:32:51]   ⚠ PO already exists: 4510517495
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510521928
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510518898, 4510520840, 4510518484, 4510518477, 4510518495, 4510518477, 4510518496
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510515144
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510514070
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510518933/50
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510518933/40
+[2025-10-12 12:32:52]   ⚠ PO already exists: IMA-IFD-00001-CO-000001
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4501878407
+[2025-10-12 12:32:52]   ⚠ PO already exists: RFQ 12- 4510520302 ,
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510514792
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510515435
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510515144/10
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510515144/20
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510518949/10
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510508200/10
+[2025-10-12 12:32:52]   ⚠ PO already exists: 4510518495/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510504249/40
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510511926/30
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510503650/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510503650/20
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510517495/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510505618/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510505618/20
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510520840/10/50/90/140
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510517495/20
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510522478/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510520990/20
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510520990/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510520302/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510520302/10
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510521928/10/70/130/190/220
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510521928/40/100/160/250/280
+[2025-10-12 12:32:53]   ⚠ PO already exists: 4510510423/20
+[2025-10-12 12:32:54]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:32:54]   ⚠ PO already exists: DECN-KLTSC-001
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510518933/70
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510518933/80
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510522922/10
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510522816/10/30
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510523313/30
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510523313/30
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510523313/40
+[2025-10-12 12:32:54]   ⚠ PO already exists: 4510523313/40
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510522478/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510508595/60
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510508595/30
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510525594/20
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510528147/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510528148/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510528162/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510521928/50/110/140
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510514792/10
+[2025-10-12 12:32:55]   ⚠ PO already exists: 4510529549/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510527512/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510527512/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510527513/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510504249/40
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510503650/40
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510504249/30
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510525341/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510525208/20
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510503650/40
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510525208/20
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510525341/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510525208/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: 4510523673/10
+[2025-10-12 12:32:56]   ⚠ PO already exists: PV IESL-006
+[2025-10-12 12:32:57]   ⚠ PO already exists: 4510525799/10
+[2025-10-12 12:32:57]   ⚠ PO already exists: 4510525217/10
+[2025-10-12 12:32:57]   ⚠ PO already exists: 4510525208/40
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214841.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214841.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214835.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214835.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214845.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214845.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214858.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214858.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214857.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214857.0
+[2025-10-12 12:32:57]   ⚠ PO already exists: 950214842.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214842.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214840.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214840.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214815.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214815.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214816.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950214816.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950215473.0
+[2025-10-12 12:32:58]   ⚠ PO already exists: 950215954.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950215954.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950217256.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950217256.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219183.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219183.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219058.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219058.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219056.0
+[2025-10-12 12:32:59]   ⚠ PO already exists: 950219056.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950219053.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950219053.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950219179.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950219179.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950222138.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950222138.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950223572.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950223572.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950225342.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950225342.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950224982.0
+[2025-10-12 12:33:00]   ⚠ PO already exists: 950224982.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950231420.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950231420.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950231391.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950231391.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950233049.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950233049.0
+[2025-10-12 12:33:01]   ⚠ PO already exists: 950233468.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950233468.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950234045.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950234045.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950238293.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950238293.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950240053.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950240053.0
+[2025-10-12 12:33:02]   ⚠ PO already exists: 950242475.0
+[2025-10-12 12:33:03]   ⚠ PO already exists: 950242475.0
+[2025-10-12 12:33:03]   ⚠ PO already exists: 950244761.0
+[2025-10-12 12:33:03]   ⚠ PO already exists: 950244761.0
+[2025-10-12 12:33:03]   ⚠ PO already exists: 950242681.0
+[2025-10-12 12:33:03]   ✓ Added PO: 402450259 | ANTAN | $116,250.00
+[2025-10-12 12:33:03]   ✓ Added PO: 451054119 | SPDC | $95,440.80
+[2025-10-12 12:33:04]   ✓ Added PO: 4510527118 | RENAISSANCE | $759.52
+[2025-10-12 12:33:04]   ✓ Added PO: 4510527125 | RENAISSANCE | $60,049.66
+[2025-10-12 12:33:05]   ✓ Added PO: 4510527119 | RENAISSANCE | $355.97
+[2025-10-12 12:33:06]   ⚠ PO already exists: CALL-OFF
+[2025-10-12 12:33:06]   ⚠ PO already exists: PO250020
+[2025-10-12 12:33:06]   ⚠ PO already exists: PO57183
+[2025-10-12 12:33:06]   ⚠ PO already exists: PO4510518199
+[2025-10-12 12:33:06]   ⚠ PO already exists: PO1008232106
+[2025-10-12 12:33:06]   ⚠ PO already exists: PO4501885014
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO 1494612
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO01518
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO0061180375
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO53925
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO0061186798
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO4501851971
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO1518232
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO 4500951085
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO 4200081366-Rev1
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO4200081366
+[2025-10-12 12:33:07]   ⚠ PO already exists: PO4501729612
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4501730177
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4510525026/30/40/50/60/70
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4510525026/10/20
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4510525193
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4200081323
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4560192860
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO4510486629
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO 4501701938
+[2025-10-12 12:33:08]   ⚠ PO already exists: PO 4501705578
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO. 0061244841
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO. 250580
+[2025-10-12 12:33:09]   ⚠ PO already exists: OPBV1 - KM048N-01
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO0061245307
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO62220
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO0061256850
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO 4200084251
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO 4200084203
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO 344902
+[2025-10-12 12:33:09]   ⚠ PO already exists: PO 0061263520
+[2025-10-12 12:33:10]   ⚠ PO already exists: PO  0061271300
+[2025-10-12 12:33:10]   ⚠ PO already exists: PO 0061278700
+[2025-10-12 12:33:10]   ⚠ PO already exists: PO 0061281180
+[2025-10-12 12:33:10]   ⚠ PO already exists: PO 0061273198
+[2025-10-12 12:33:10]   ⚠ PO already exists: PO NGIC/ML/UANL/24-0022-4
+[2025-10-12 12:33:10] 
+✓ Successfully migrated 25 purchase orders
+[2025-10-12 12:33:10] ⚠ Skipped 187 records
+[2025-10-12 12:33:10] 
+================================================================================
+[2025-10-12 12:33:10] MIGRATION SUMMARY REPORT
+[2025-10-12 12:33:10] ================================================================================
+[2025-10-12 12:33:11] 
+📊 DATABASE STATISTICS:
+[2025-10-12 12:33:11]   Total SBUs: 6
+[2025-10-12 12:33:11]   Total Clients: 45
+[2025-10-12 12:33:11]   Total Purchase Orders: 163
+[2025-10-12 12:33:11]   Total Portfolio Value: $42,983,861.03
+[2025-10-12 12:33:12]   Average PO Value: $263,704.67
+[2025-10-12 12:33:12] 
+📈 PO STATUS BREAKDOWN:
+[2025-10-12 12:33:12]   Active: 159
+[2025-10-12 12:33:12]   Completed: 0
+[2025-10-12 12:33:12]   Cancelled: 0
+[2025-10-12 12:33:12] 
+🏢 SBU BREAKDOWN:
+[2025-10-12 12:33:12]   ENGINEERING, DESIGN AND CONSTRUCTION: 67 POs | $25,848,927.03
+[2025-10-12 12:33:12]   OILFIELD SUPPLY AND SERVICES: 40 POs | $15,918,096.99
+[2025-10-12 12:33:12]   TECHNICAL CONSULTANCY SERVICES: 25 POs | $881,974.57
+[2025-10-12 12:33:12]   GLOBAL COMMERCIAL MANAGEMENT: 31 POs | $334,862.45
+[2025-10-12 12:33:13]   POWER & RENEWABLES: 0 POs | $0.00
+[2025-10-12 12:33:13]   PROJECT MANAGEMENT CONSULTANCY SERVICES: 0 POs | $0.00
+[2025-10-12 12:33:13] 
+⚠️  EXPIRING POs (Next 90 days): 28
+[2025-10-12 12:33:13]   7700051520 (MONTHLY) | NIGERIA LNG | 5 days remaining
+[2025-10-12 12:33:13]   4260065415 | TOTAL ENERGIES | 17 days remaining
+[2025-10-12 12:33:13]   4510515435 | SNEPCO | 80 days remaining
+[2025-10-12 12:33:13]   4510515144/10 | SNEPCO | 80 days remaining
+[2025-10-12 12:33:13]   4510515144/20 | SNEPCO | 80 days remaining
+[2025-10-12 12:33:13] 
+❌ ERRORS ENCOUNTERED: 1
+[2025-10-12 12:33:13]   [2025-10-12 12:32:52] ERROR: Client not found: 
+[2025-10-12 12:33:14] 
+💾 Final database backup: backup_after_migration_20251012_123314.db
+
+================================================================================
+ERRORS:
+================================================================================
+[2025-10-12 12:32:52] ERROR: Client not found: 
